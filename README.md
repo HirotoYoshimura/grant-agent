@@ -1,196 +1,293 @@
-# FundingSearchCrew - 助成金検索エージェントアプリ ユーザーガイド
+# Google ADK 助成金検索エージェント ユーザーガイド
 
 ## 概要
 
-FundingSearchCrewは、研究者のプロファイル情報をもとに最適な公募・助成金情報を自動的に検索するAIエージェントアプリケーションです。このアプリはStreamlitインターフェースを通じて、ユーザーフレンドリーな操作環境を提供します。本アプリはCrewAI（複数のAIエージェントが連携して作業を行うフレームワーク）を利用して、各専門エージェントが連携しながら助成金を検索・分析します。
+Google ADK 助成金検索エージェントは、研究者のプロファイル情報をもとに最適な助成金情報を自動的に検索するAIエージェントアプリケーションです。Google ADK (Agent Development Kit)を利用しており、複数のAIエージェントが連携しながら助成金を検索・分析します。
 
 ## 主な機能
 
-- 研究者プロファイルの分析（テキスト入力またはPDFアップロード）
+- 研究者プロファイルの分析
 - 自動助成金検索と情報抽出
 - 助成金情報の構造化と優先順位付け
-- 検索結果のcsv形式でのレポート生成
+- 検索結果のCSV形式でのレポート生成
 - エージェント別のモデル設定による最適な処理
+
+## ワークフロー図
+
+助成金検索プロセスは主に2つのフェーズで構成されています：
+
+1. **初期収集フェーズ**
+   - プロファイル分析
+   - 仮説生成
+   - クエリ生成
+   - 候補リスト生成
+
+2. **詳細調査フェーズ**
+   - ユーザー代理選択
+   - 助成金詳細調査
+   - 調査評価
+   - レポート生成
 
 ```mermaid
 graph TD
-    start([研究者プロファイル]) --> phase1
-
-    subgraph phase1["初期情報収集フェーズ"]
-        a1[プロファイル分析者] --> a2[仮説生成者]
-        a2 --> a3[クエリ生成者]
-        a3 --> a4[検索専門家<br>候補CSV作成]
-    end
-
-    subgraph phase2["詳細調査ループ"]
-        b1[ユーザー代理<br>次の助成金選択] --> b2[検索専門家<br>詳細情報収集]
-        b2 --> b3[調査評価者<br>情報完全性評価]
-        b3 --> b4{十分な情報?}
-        b4 -->|不足あり| b2
-        b4 -->|完成| b5[レポート生成者<br>評価・CSV更新]
-        b5 --> b6{全件完了?}
-        b6 -->|No| b1
-        b6 -->|Yes| b7[調査完了]
-    end
-
-    phase1 --> phase2
-    phase2 --> final([最終結果: 構造化された助成金情報])
-
-    classDef phaseBox fill:#f5f5f5,stroke:#333,stroke-width:1px,rx:10px,ry:10px,color:#000
-    classDef analyst fill:#ffd700,stroke:#333,stroke-width:2px,color:#000
-    classDef searcher fill:#90ee90,stroke:#333,stroke-width:2px,color:#000
-    classDef evaluator fill:#add8e6,stroke:#333,stroke-width:2px,color:#000
-    classDef reporter fill:#ffb6c1,stroke:#333,stroke-width:2px,color:#000
-    classDef junction fill:#f9f9f9,stroke:#333,stroke-width:1px,color:#000
-    classDef endpoint fill:#e6e6e6,stroke:#333,stroke-width:2px,rx:15px,ry:15px,color:#000
-
-    class phase1,phase2 phaseBox
-    class a1,a2,a3 analyst
-    class a4,b2 searcher
-    class b1,b3 evaluator
-    class b5 reporter
-    class b4,b6 junction
-    class start,final,b7 endpoint
+   subgraph Phase1[フェーズ1: 初期収集]
+        A[プロファイル分析] --> B[仮説生成]
+        B --> C[クエリ生成]
+        C --> D[候補リスト生成]
+      end
+      
+      subgraph Phase2[フェーズ2: 詳細調査]
+        E[ユーザー代理選択] --> F[助成金詳細調査]
+        F --> G[調査評価]
+        G --> H{完了?}
+        H -->|No| F
+        H -->|Yes| I[レポート生成]
+      end
+      
+      Phase1 --> Phase2
 ```
+
 
 ## 動作環境要件
 
-- Python 3.8以上
+- Python 3.10〜3.12
 - インターネット接続
 - 必要なAPI鍵:
   - Google API Key（検索用）
-  - Google Custom Search Engine ID
+  - Google Custom Search Engine ID 
   - Google Gemini API Key（AI処理用）
 
 ## セットアップ手順
 
-### 1. リポジトリのクローン/ダウンロード
+### 1. 必要なソフトウェアのインストール
 
-```bash
-git clone https://github.com/LTS-AnalyticsTeam/grant_Agent.git
-```
+#### VSCode (Visual Studio Code) のインストール
 
-### 2. devcontainerの起動
+1. [Visual Studio Code公式サイト](https://code.visualstudio.com/)にアクセスします
+2. お使いのオペレーティングシステム（Windows、Mac、Linux）に適したインストーラーをダウンロードします
+3. ダウンロードしたインストーラーを実行し、画面の指示に従ってインストールを完了します
 
-リポジトリをdevcontainerで立ち上げてください。devcontainer環境では必要なライブラリが事前にインストールされています。
+#### Docker のインストール
 
-## 必要なAPIキーの取得方法
+Docker は、アプリケーションを開発、移動、実行するためのプラットフォームです。
 
-### Google API Key & Custom Search Engine ID
+**Windows の場合:**
+1. [Docker Desktop for Windows](https://docs.docker.com/desktop/install/windows-install/)をダウンロードします
+2. インストーラーを実行し、指示に従ってインストールします
+3. WSL 2 (Windows Subsystem for Linux 2)のインストールを求められる場合があります
 
-1. **Google Cloud Platformアカウント作成**
-   - [Google Cloud Platform](https://console.cloud.google.com/)にアクセス
-   - アカウント登録（Googleアカウントが必要）
+**Mac の場合:**
+1. [Docker Desktop for Mac](https://docs.docker.com/desktop/install/mac-install/)をダウンロードします
+2. インストーラーをダブルクリックし、Applications フォルダにドラッグします
+3. アプリケーションフォルダから Docker Desktop を起動します
+
+**Linux の場合:**
+1. [Docker Engine](https://docs.docker.com/engine/install/)のドキュメントに従ってインストールします
+
+#### Dev Containers 拡張機能のインストール
+
+1. VSCode を起動します
+2. 左側のアクティビティバーで拡張機能アイコン（四角形のアイコン）をクリックします
+3. 検索ボックスに「Dev Containers」と入力します
+4. 「Dev Containers」拡張機能（Microsoft が提供）をクリックし、「インストール」ボタンをクリックします
+
+### 2. リポジトリのクローン
+
+1. VSCode を起動します
+2. `Ctrl+Shift+P` (Windows/Linux) または `Cmd+Shift+P` (Mac) を押して、コマンドパレットを開きます
+3. 「Git: Clone」と入力し、エンターキーを押します
+4. リポジトリの URL を入力するよう求められたら、以下を入力します:
+   ```
+   https://github.com/LTS-AnalyticsTeam/grant_Agent.git
+   ```
+
+5. リポジトリを保存するローカルディレクトリを選択します
+
+### 3. Dev Container での開発環境の起動
+
+1. リポジトリがクローンされたら、VSCode でそのフォルダを開きます
+2. VSCode の右下に「Reopen in Container」というポップアップが表示されます。これをクリックします
+   - ポップアップが表示されない場合は、`Ctrl+Shift+P` (Windows/Linux) または `Cmd+Shift+P` (Mac) を押してコマンドパレットを開き、「Remote-Containers: Reopen in Container」と入力してエンターキーを押します
+3. VSCode が Dev Container を構築し、リポジトリをコンテナ内で開きます。これには数分かかる場合があります
+
+### 4. 必要なAPIキーの取得方法
+
+#### Google API Key & Custom Search Engine ID の取得
+
+1. **Google Cloud Platform アカウント作成**
+   - [Google Cloud Platform](https://console.cloud.google.com/) にアクセスします
+   - Googleアカウントでログインします（アカウントがない場合は作成してください）
 
 2. **プロジェクト作成**
-   - 「新しいプロジェクト」を選択
-   - プロジェクト名を入力して「作成」
+   - 上部のナビゲーションバーにあるプロジェクト選択ドロップダウンをクリックします
+   - 表示されるダイアログで「新しいプロジェクト」をクリックします
+   - プロジェクト名を入力して「作成」をクリックします
 
-3. **Custom Search APIの有効化**
-   - 左メニューから「APIとサービス」→「ライブラリ」
-   - 「Custom Search API」を検索して選択
-   - 「有効にする」をクリック
+3. **Custom Search API の有効化**
+   - 左側のナビゲーションメニューから「APIとサービス」→「ライブラリ」を選択します
+   - 検索ボックスに「Custom Search API」と入力します
+   - 検索結果から「Custom Search API」をクリックします
+   - 「有効にする」ボタンをクリックします
 
-4. **APIキー発行**
-   - 左メニューから「APIとサービス」→「認証情報」
-   - 「認証情報を作成」→「APIキー」
-   - 表示されたキーをコピー（Google API Key）
+4. **API キーの作成**
+   - 左側のナビゲーションメニューから「APIとサービス」→「認証情報」を選択します
+   - 上部の「+ 認証情報を作成」をクリックし、ドロップダウンから「APIキー」を選択します
+   - 新しいAPIキーが生成されます。このキーをコピーして安全な場所に保存してください（これが Google API Key になります）
+   - 必要に応じて「APIキーを制限」をクリックして、キーのセキュリティ設定を行うことができます
 
-5. **Custom Search Engine設定**
-   - [Programmable Search Engine](https://programmablesearchengine.google.com/create/new)にアクセス
-   - サイト制限なし（全ウェブ検索）を選択
-   - 検索エンジン名を入力して「作成」
-   - 作成後、「コントロールパネル」→「基本」タブ
-   - 「検索エンジン ID」をコピー（Google CSE ID）
+5. **Custom Search Engine の設定**
+   - [Programmable Search Engine](https://programmablesearchengine.google.com/about/) にアクセスします
+   - 「始める」または「Get started」をクリックします
+   - 「新しい検索エンジン」または「Create a new search engine」をクリックします
+   - 「検索するサイト」で「検索エンジンの検索対象」を「検索」または「Search the entire web」を選択します
+   - 検索エンジン名を入力して「作成」をクリックします
+   - 作成後、「コントロールパネル」や「Control Panel」から検索エンジンの設定ページに移動します
+   - 「基本」タブで「検索エンジン ID」を見つけます。これをコピーして保存してください（これが Google CSE ID になります）
 
-### Google Gemini API Key
+#### Google Gemini API Key の取得
 
-1. **Google AI Studioへアクセス**
-   - [Google AI Studio](https://makersuite.google.com/app/apikey)を開く
-   - Googleアカウントでログイン
+1. **Google AI Studio にアクセス**
+   - [Google AI Studio](https://makersuite.google.com/app/apikey) にアクセスします
+   - Googleアカウントでログインします
 
-2. **APIキーの作成**
-   - 「API キーを取得」または「Create API Key」をクリック
-   - 表示されたキーをコピー（Gemini API Key）
+2. **API キーの作成**
+   - 「API キーを取得」または「Create API Key」をクリックします
+   - 新しいAPIキーが生成されます。このキーをコピーして安全な場所に保存してください（これが Gemini API Key になります）
 
-## アプリケーションの起動
+### 5. アプリケーションの環境設定
 
-```bash
-cd crewai/dev_grant
-./run.sh
-```
+1. Dev Container 内で、ターミナルを開きます（VSCode のメニューから「ターミナル」→「新しいターミナル」）
+2. 以下のコマンドを実行して、環境セットアップスクリプトを実行します:
+   ```bash
+   cd google-adk
+   ./setup_env.sh
+   ```
+3. このスクリプトは必要な Python パッケージをインストールし、仮想環境を設定します
 
-または:
+### 6. アプリケーションの起動
 
-```bash
-cd crewai/dev_grant
-streamlit run streamlit_app.py
-```
+1. Dev Container 内のターミナルで、以下のコマンドを実行してアプリケーションを起動します:
+   ```bash
+   ./run_ui.sh
+   ```
+2. ブラウザで Streamlit アプリが自動的に開きます（通常は http://localhost:8501）
 
 ## アプリケーションの使用方法
 
-### 1. APIキーの設定
+### 1. API設定
 
-1. 2ページ目の「API Settings」セクションに必要なAPIキーを入力
-2. エージェント別のモデル設定（各タブで選択）
-3. 検索する助成金の数を設定
-4. AI処理の有効/無効を選択
-5. 「Set API Keys」ボタンをクリック
+1. サイドバーの「API設定」をクリックします
+2. 以下のAPIキーを入力します:
+   - GOOGLE_CSE_API_KEY: Google Cloud Platform で取得した API キー
+   - GOOGLE_CSE_ID: Programmable Search Engine で取得した検索エンジン ID
+   - GOOGLE_API_KEY: Google AI Studio で取得した Gemini API キー
+3. 「設定を保存」ボタンをクリックします
 
-### 2. プロファイル情報の入力
+### 2. LLM モデル設定
 
-#### テキスト入力の場合:
-1. 「Enter text」オプションを選択
-2. テキストエリアに研究者プロファイル情報を入力
-3. 「Save Profile」ボタンをクリック
+1. サイドバーの「LLMモデル設定」をクリックします
+2. 各エージェントに使用する Gemini モデルを選択します:
+   - profile_analyzer: プロファイル分析を行うエージェント
+   - hypotheses_generator: 仮説を生成するエージェント
+   - query_generator: 検索クエリを生成するエージェント
+   - search_expert: 検索と情報抽出を行うエージェント
+   - report_generator: レポートを生成するエージェント
+   - user_proxy: ユーザー代理として働くエージェント
+   - investigation_evaluator: 調査情報を評価するエージェント
+3. 「設定を保存」ボタンをクリックします
 
-#### PDFアップロードの場合:
-1. 「Upload PDF」オプションを選択
-2. 研究者プロファイルが含まれるPDFファイルをアップロード（複数可）
-3. 処理方法を選択（順次処理または一括処理）
-4. 「Process PDFs」ボタンをクリック
-5. PDFの処理完了を待つ
-6. テキスト入力に切り替えて、追加で修正することもできます
 
-プロファイル例:
-```
-名前: 山田太郎
-研究分野: 人工知能, 機械学習
-所属: 東京大学
-役職: 助教授
-研究キーワード: 深層学習, 自然言語処理
-国籍: 日本
-学歴: 博士（工学）
-```
+### 3. プロファイル登録
 
-### 3. 助成金検索の実行
+1. サイドバーの「ユーザープロファイル」をクリックします
+2. 研究者プロファイルを入力します:
+   自身の研究に関連するPDFをアップロードし、geminiでプロファイルを自動生成することもできます。
 
-1. 「Run Grant Search」ボタンをクリック
-2. 検索処理の進行状況がリアルタイムで表示される
-3. 処理完了後、右側のカラムに結果が表示される
+   <details><summary>生成した架空のプロファイル例。</summary>
 
+   ```txt
+   **研究内容・興味**
+   Takase Kは人工知能と神経科学の交差点における研究を専門としています。特に、人間の脳の情報処理メカニズムを計算論的にモデル化し、それを応用した新しいAIアルゴリズムの開発に強い興味を持っています。具体的には、以下のテーマを中心に研究を進めています。
+   脳型AIアーキテクチャの設計と実装: 大脳皮質や海馬などの脳構造からヒントを得たニューラルネットワークモデルの構築。
+   神経活動データに基づく機械学習モデルの検証: fMRIやEEGなどの脳計測データを用いて、開発したAIモデルの生物学的妥当性を評価。
+   脳損傷後の機能回復を支援するAI: リハビリテーションや脳インターフェースへの応用を目指した研究。
+   特に、脳がどのようにして複雑な情報を統合し、予測や意思決定を行っているのかという根源的な問いに対する計算論的なアプローチを探求しています。
+   **過去の公募・助成金獲得情報**
+   日本学術振興会 科学研究費助成事業 (科研費) 基盤研究(C) (代表) 「脳型強化学習における報酬信号の時空間的最適化に関する研究」 (20XX年度 - 20YY年度)
+   国内学会優秀発表賞 (〇〇学会、20BB年)
+   **研究実績**
+   査読付き論文:
+   Takase, K., et al. (20XX). A biologically plausible spiking neural network model for contextual learning. Nature Neuroscience (仮).
+   Yamada, S., Takase, K., et al. (20ZZ). Decoding attentional states from EEG signals using a recurrent neural network with biological constraints. PLOS Computational Biology (仮).
+   (その他、〇〇本以上の論文を発表)
+   国際会議発表:
+   Poster Presentation: "Towards a Computational Model of Hippocampal Replay in Reinforcement Learning." (Neural Information Processing Systems (NeurIPS), 20BB)
+   著書・解説記事:
+   共著: 『脳とAIの未来：計算論的神経科学からの展望』 (〇〇出版、20CC)
+   解説記事: 「脳型コンピューティングの最前線」 (〇〇学会誌、Vol.〇, No.〇)
+   研究拠点:
+   〇〇大学 〇〇学部 〇〇研究科 (または、〇〇研究所)
+   所属研究室：脳情報処理研究室 (仮)
+   その他関連情報:
+   〇〇学会 正会員
+   〇〇学会 編集委員 (20XX年 - 現在)
+   〇〇学会 〇〇部会 幹事 (20YY年 - 20ZZ年)
+   〇〇企業との共同研究実績あり (テーマ：AIを活用した医療診断支援システム開発)
+   大学院生、学部生の指導に熱心であり、後進の研究者育成にも力を入れている。
+   研究成果を社会に還元することに関心があり、一般向けの講演活動なども積極的に行っている。
+   ```
+   </details>
+
+
+
+### 4. 助成金検索の実行
+
+1. サイドバーの「助成金検索実行」をクリックします
+2. 調査する助成金数を設定します（1〜10の範囲）
+3. 最小助成金候補数を設定します（5〜100の範囲）
+4. 「助成金検索を実行」ボタンをクリックします
+5. 検索処理の進行状況がリアルタイムでログウィンドウに表示されます
+
+### 5. 結果の確認
+
+1. サイドバーの「結果確認」をクリックします
+2. 「候補リスト」タブで、検索された助成金候補の一覧を確認できます
+3. 「詳細調査済み」タブで、詳細調査が完了した助成金の情報を確認できます
+4. 必要に応じて CSV ファイルをダウンロードできます
+5. 実行ログを確認し、必要に応じてダウンロードすることもできます
 
 ## トラブルシューティング
 
-### パス関連の問題
+### API キーに関する問題
 
-サイドバーの「Tools」セクションにある「Path Diagnostics」ボタンを使用して、現在のパス設定を確認できます。問題が検出された場合は「Reset Settings」をクリックしてリセットしてください。
+- **エラーメッセージ: "API Key or CSE ID not configured"**: API設定ページで正しいAPIキーを入力しているか確認してください
+- **検索結果が表示されない**: Google Cloud Platform のコンソールで Custom Search API が有効になっているか確認してください
 
-### 一般的なエラー
+### 実行エラー
 
-- **PDFの処理エラー**: 別のPDFをアップロードするか、テキスト入力オプションを使用
-- **API接続エラー**: インターネット接続を確認し、APIキーが正しいことを確認
-- **実行エラー**: 「Path Diagnostics」を実行して構造問題を特定し、「Reset Settings」で修正
-- **トークン制限エラー**: 大きなPDFや複数のPDFを処理する場合は「順次処理」オプションを選択
-- **レート制限エラー**: 無料枠の場合は、flash-liteなどRPMが大きいものにモデルを変更してください
+- **プロファイル読み込みエラー**: プロファイルテキストが正しく入力されているか確認してください
+- **モジュールインポートエラー**: setup_env.sh スクリプトを再実行して、すべての依存関係が正しくインストールされていることを確認してください
+- **ディレクトリやファイルが見つからない**: アプリケーションのルートディレクトリから実行していることを確認してください
+- **500エラー**:　APIキーのレート制限に達しています。より小型のモデルを使用するか、従量課金プランを検討してください（1回の実行であれば数十円程度です）
 
-### crewai CLIの利用
+### Streamlit UI の問題
 
-アプリは内部で`crewai run`コマンドを使用します。このコマンドが利用できない場合は、自動的にPythonスクリプトを直接実行するフォールバックメカニズムが作動します。
+- **UIが応答しない**: ブラウザをリフレッシュするか、アプリケーションを再起動してください
+- **ログが表示されない**: ログディレクトリが正しく作成されていることを確認してください
 
-## その他
+## ヒントとコツ
 
-詳細なドキュメントや問題報告については、プロジェクトのGitHubリポジトリを参照してください。
+- 研究者プロファイルはできるだけ詳細に入力すると、より関連性の高い助成金が見つかります
+- 複数回の検索を行うことで、より多くの助成金候補を見つけることができます
+- 各エージェントのモデルを調整することで、検索の精度と速度のバランスを最適化できます
+- 検索結果のCSVファイルは、スプレッドシートソフトで開いて詳細に分析することができます
+
+## プライバシーとセキュリティ
+
+- APIキーは環境変数として保存され、.env ファイルに格納されます
+- 検索結果やログは、ローカルのディレクトリにのみ保存されます
+- 研究者プロファイル情報は Google のサービスに送信されますが、Google のプライバシーポリシーに従って処理されます。  
+**研究機密や公開したくない個人情報を入力しないように注意してください。**
 
 ---
 
