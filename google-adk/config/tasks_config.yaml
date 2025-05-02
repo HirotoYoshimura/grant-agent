@@ -1,0 +1,233 @@
+profile_analyzer_task:
+  description: |
+    ユーザープロファイルを分析し、助成金機会に関連する研究興味、キーワード、および優先事項を抽出してください。
+    
+    UserProfileReaderToolを使用してプロファイルを読み取り、解析してください。
+    提供されるプロファイルは自由形式のテキストファイルで、構造化されていない場合もあります。
+    
+    以下の情報を抽出してください（入手可能な範囲で）：
+    1. 主な研究興味と研究分野
+    2. キャリアステージと学術的背景
+    3. 適格性要因（国籍、年齢、学歴）
+    4. 特定の助成金の希望（金額、期間、種類）
+    5. 地理的な希望または制限
+    
+    テキストから研究キーワードを抽出し、主要な専門分野と副次的な興味を特定してください。
+    情報が明示的に提供されていない場合は、文脈から推測し、推測であることを明記してください。
+    
+    この情報を明確で構造化された形式で整理してください。明示的に記載されていない場合でも、
+    できるだけ多くのフィールドに情報を入力するよう努めてください。
+  expected_output: 助成金検索のための主要な研究興味、キーワード、学術的背景、および優先事項の構造化辞書。
+  agent: profile_analyzer
+
+hypotheses_generator_task:
+  description: |
+    ユーザーの研究興味、キーワード、学術的背景、および優先事項の構造化辞書に基づいて、応募機会があると考えられる助成金カテゴリの仮説を10個生成してください。
+    カテゴリは具体的にしすぎないようにし、幅広い助成金機会をカバーするようにしてください。
+    カテゴリは1単語または短いフレーズで表現してください。
+    例えばクジラの研究者であれば、海洋生物学、環境保護、野生生物保護などのカテゴリが考えられます。
+  expected_output: ユーザーに関連する助成金カテゴリの構造化辞書。
+  agent: hypotheses_generator
+
+query_generator_task:
+  description: |
+    分析されたユーザープロファイルと助成金カテゴリに基づいて、関連する助成金機会を見つけるための効果的な検索クエリを生成してください。
+    
+    以下の条件を満たす助成金を効果的に見つけるための5〜10の異なる検索クエリを作成してください：
+    1. hypotheses_generatorが生成したカテゴリの助成金
+    2. 適格基準に合致する助成金機会
+    
+    異なる助成金源を考慮したバリエーションを含めてください：
+    - 政府の助成金とプログラム
+    - 民間財団の資金提供
+    - 大学または機関の資金提供
+    - 民間企業の公募・コンペ
+    
+    出力をクエリ文字列のリストとして形式化してください。
+    クエリは、検索エンジンで使用できる形式である必要があります。
+    クエリは可能な限りシンプルにしてください。基本的にはカテゴリ名に助成金をスペース区切りで結合したもので構成されます。
+    例：「海洋生物学 助成金」
+    各クエリには、そのクエリがどのタイプの助成金機会を対象としているかの簡単な説明を付けてください。
+  expected_output: 関連する助成金機会を見つけるために最適化された5〜10の検索クエリのリスト。
+  agent: query_generator
+
+generate_initial_grants_list_task:
+  description: |
+    クエリ生成者が提供した**すべての**検索クエリを順番に実行し、候補となる助成金機会のリストを生成してCSVファイルに保存してください。
+    最低でも{min_candidates}件の助成金を見つける必要があります。
+    
+    以下の手順で作業してください:
+    
+    1. クエリ生成者から受け取ったすべての検索クエリを抽出する
+    2. 各クエリを1つずつ検索する
+    3. 各クエリの結果から、関連する助成金情報を抽出する
+    4. 異なる助成金のみを追加し、重複を避ける
+    5. 得られた助成金リストを以下の形式で整理する:
+       - id (形式: "grant_数字" 例: "grant_1", "grant_2"等のように一意の識別子を生成)
+       - title (助成金名)
+       - organization (提供機関)
+       - description (簡単な説明)
+       - url (関連URLリンク)
+       - category (該当するカテゴリー)
+       - amount: 助成金額（範囲または正確な金額）
+       - eligibility: 適格基準（応募資格、条件）
+       - deadline: 申請締切日
+       - application_process: 申請プロセスの詳細
+       - required_documents: 必要書類
+       - research_fields: 対象となる研究分野
+       - duration: 助成金の期間
+       - contact: 問い合わせ先
+       - special_conditions: 特別な条件
+       - is_deadline_passed: 締切日が{current_date}時点で過ぎているかどうか（True/False）
+      不明な情報については、不明と明記してください。
+
+    クエリ実行の進捗と結果を報告してください。例:
+    - クエリ1 "環境保全 助成金": 3件の助成金を発見
+    - クエリ2 "野生動物保護 研究費": 4件の新規助成金を発見
+    
+    少なくとも{min_candidates}件の異なる助成金機会を見つけて、各助成金に一意のIDを付与してください。
+    すべてのクエリを試した結果が合計{min_candidates}件未満の場合は、その結果のみを使用してください。
+    
+    CSVWriterToolを使用してデータを保存する方法:
+    CSVWriterTool(
+        grants_data=[
+            {{
+                "id": "grant_1", 
+                "title": "科学研究費", 
+                "organization": "文部科学省"
+            }},
+            {{
+                "id": "grant_2", 
+                "title": "若手研究者支援", 
+                "organization": "JST"
+            }},
+            ...
+        ]    )
+        
+  expected_output: 基本的な助成金情報のCSVファイル（少なくとも10件の助成金候補を含む）
+  agent: search_expert
+
+select_grant_to_investigate_task:
+  description: |
+    現在の助成金リスト{grants_list_path}から、ユーザープロファイルに基づいて詳細調査を行うべき助成金を1つ選択してください。
+    すでに調査済みの助成金（investigated=true)は除外してください。
+    CSVReaderToolを使用して助成金リストを読み込み、
+    ユーザーにとって最も関連性が高いと思われる助成金を選択してください。
+    
+    選択基準:
+    - ユーザーの研究分野との関連性
+    - ユーザーのキャリアステージに適合するか
+    - ユーザーが適格要件を満たす可能性が高いか
+    - 情報の完全性（既に調査済みの場合は優先度を下げる）
+    - 申請締切日（今日の日付は {current_date} です。締切が近いものを優先）
+    
+    # 重要: 出力形式
+    必ず以下の形式で明確に助成金IDを指定してください：
+    
+    選択した助成金ID: grant_X
+    理由: この助成金はユーザーの研究分野と直接関連しており...
+    
+    または
+    
+    助成金ID: grant_X
+    選択理由: ...
+    
+    必ず「助成金ID:」または「選択した助成金ID:」というラベルを使って、その後に助成金IDを明記してください。
+    助成金IDは「grant_」で始まる形式です（例: grant_1, grant_2）。
+  expected_output: 詳細調査のために選択された助成金IDとその選択理由の詳細な説明
+  agent: user_proxy
+
+investigate_grant_task:
+  description: |
+    選択された助成金について詳細な情報を収集してください。
+    
+    まず、基本情報を取得するためにCSVReaderToolを使用して{grants_list_path}から助成金情報を読み込んでください。
+    次に、この助成金に関連するウェブサイトや文書から詳細情報を収集してください。
+    
+    この助成金に関して、以下の詳細情報を可能な限り収集してください:
+    - amount: 助成金額（範囲または正確な金額）
+    - eligibility: 適格基準（応募資格、条件）
+    - deadline: 申請締切日
+    - application_process: 申請プロセスの詳細
+    - required_documents: 必要書類
+    - research_fields: 対象となる研究分野
+    - duration: 助成金の期間
+    - contact: 問い合わせ先
+    - special_conditions: 特別な条件
+    - is_deadline_passed: 締切日が{current_date}時点で過ぎているかどうか（True/False）
+    
+    情報ソース（URL）も必ず記録してください。
+    WebBrowserToolなどのツールを活用して、助成金提供元のウェブサイトから直接情報を収集してください。
+    **重要:** 目的の情報が最初のページで見つからない場合は、ページ内の関連リンク（例: '募集要項', '詳細', '申請方法' など）を探し、FollowLinkTool を使って **1～2階層** 深くまで調査を試みてください。または、検索クエリを作成して（"<助成金名> <不明な項目>"など）、GoogleSearchToolを使うことも検討してください。それでも情報がない場合のみ「不明」と報告してください。
+    **最終出力形式:**
+    収集した全ての詳細情報（amount, eligibility, deadline, application_process, required_documents, research_fields, duration, contact, special_conditions, is_deadline_passed, source_url など）を**キーと値**とするJSONオブジェクトを作成してください。
+    不明な情報はキーの値として `\"不明\"` または `null` を使用してください。
+    あなたの最終的な応答は、**このJSONオブジェクトを表現する文字列のみ**でなければなりません。他のテキスト（例: 「以下にJSONを示します」、「調査結果は次の通りです」など）やMarkdownのコードブロックマーカー (```json ... ```) も含めないでください。
+    例:
+    '{"amount": "500万円", "eligibility": "博士号取得後5年以内", "deadline": "2025-10-31", ...}'
+  expected_output: 指定された助成金に関する詳細情報（JSON形式）
+  agent: search_expert
+
+evaluate_investigation_task:
+  description: |
+    収集された助成金情報（grant ID `{grant_id}`、JSON形式でコンテキストとして提供）の完全性を評価してください。
+    以下の重要なフィールドに具体的な情報が含まれているか（「不明」や「N/A」でないか）を確認してください:
+    - `amount` (助成金額)
+    - `eligibility` (応募資格)
+    - `deadline` (申請締切日)
+    - `application_process` (申請プロセス)
+    - `required_documents` (必要書類)
+
+    評価に基づいて、以下のいずれかを出力してください:
+    - もし **全ての** 重要フィールドに情報があれば、「調査完了」という文字列を出力してください。
+    - もし **いずれかの** 重要フィールドが欠落している（「不明」、「N/A」、または空）場合は、欠落しているフィールドの**名前**をリストアップし、SearchExpertへの具体的な再調査指示プロンプトを生成してください。
+      指示プロンプトの例: "追加調査依頼: Grant '{grant_title}' ({grant_url})について、不足している以下の情報を再度調査してください: ['deadline', 'application_process']"
+
+    出力は **必ず** 以下のいずれか**のみ**としてください:
+    1. 文字列 "調査完了"
+    2. 不足フィールドリストを含む再調査指示の文字列
+  expected_output: |
+    文字列 "調査完了"、あるいは SearchExpert 向けの再調査指示文字列のいずれか。
+
+report_and_update_task:
+  description: |
+    最終的に収集された助成金情報（grant ID `{grant_id_to_investigate}`、JSON形式でコンテキストとして提供）を評価・整理し、CSVファイルを更新してください。
+
+    **評価とスコアリング:**
+    1. 提供されたJSONデータを確認し、全体的な品質と情報の完全性をレビューしてください。
+    2. ユーザープロファイル情報（コンテキストとして提供される）と比較し、助成金の関連性を評価してください。
+    3. 以下の評価スコアを決定してください（1～10の範囲、10が最高）:
+        - `relevance_score`: ユーザーの研究内容、キャリアステージ、希望条件との関連度。
+        - `completeness_score`: 必要な詳細情報（特に eligibility, deadline, amount, application_process）がどれだけ明確に収集できたか。
+    4. 今日の日付（{current_date}）に基づいて、以下の判断も行ってください:
+        - 締切日が今日以前の場合は、`deadline_status` に "expired"（期限切れ）を設定
+        - 締切日が今日より後の場合は、`deadline_status` に "active"（応募可能）を設定
+        - 締切日が不明確な場合は、`deadline_status` に "unknown"（不明）を設定
+
+    **CSV更新:**
+    `CSVUpdaterTool` を使用し、調査中の助成金に該当する行のみを更新してください。
+    `updated_data` 辞書には、以下の **全ての情報** を含める必要があります:
+    - 調査タスクから受け取った **全ての** 詳細情報フィールド（`amount`, `eligibility`, `deadline`, `application_process`, `required_documents`, `research_fields`, `duration`, `contact`, `special_conditions` など）。不明な情報は "不明" または "N/A" として含めてください。
+    - あなたが決定した `relevance_score` と `completeness_score`。
+    - `deadline_status` フィールド（"expired", "active", "unknown"のいずれか）
+    - `investigated` フィールドを 1 に設定。
+    - `updated_at` フィールドに現在のタイムスタンプ（例: "YYYY-MM-DDTHH:MM:SS.sssZ" のISO 8601形式）。
+
+    **最終出力:**
+    CSV更新が正常に完了したことを示す確認メッセージと、更新に使用した最終的な助成金データ（全てのフィールドを含むJSON形式）を出力してください。
+  expected_output: |
+    CSVファイル更新の確認メッセージ、続いて更新に使用された最終的な助成金データのJSONオブジェクト。
+    例:
+    "ID 'grant_X' の助成金情報が正常に更新されました。
+    ```json
+    {
+      "id": "grant_X",
+      "title": "...",
+      "organization": "...",
+      // ... 他の基本情報 ...
+      "amount": "...",
+      "eligibility": "...",
+      "deadline": "...",
+      // ... 他の情報 ...
+    }
+    ```

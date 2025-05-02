@@ -1,0 +1,24 @@
+[project]
+name = "grant_adk"
+version = "0.1.0"
+description = "grant search using google ADK"
+authors = [
+    { name = "Hiroto Yoshimura" },
+]
+requires-python = ">=3.10,<3.13"
+dependencies = [
+    "pymupdf4llm==0.0.17",
+    "PyPDF2==3.0.1",
+    "langchain-google-genai==2.1.3",
+    "langchain==0.3.24",
+    "google-api-python-client==2.167.0",
+    "pymupdf4llm==0.0.17",
+    "playwright==1.51.0",
+    "html2text==2025.4.15",
+    "streamlit==1.44.1",
+    "streamlit-mermaid==0.3.0",
+    "streamlit-autorefresh==1.0.1",
+    "google-adk==0.1.0",
+    "bs4=-0.0.2",
+]
+

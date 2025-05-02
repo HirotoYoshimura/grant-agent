@@ -1,0 +1,16 @@
+.venv
+.env
+__pycache__/
+.DS_Store
+*.pdf
+user_preference.txt
+*.json
+report/
+cache
+*.log
+venv
+.env_bk
+grants_data
+user_preference.txt
+crewai_venv
+langchain
