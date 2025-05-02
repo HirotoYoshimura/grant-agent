@@ -17,6 +17,7 @@ import threading
 import time
 import csv
 import signal
+import yaml
 from pathlib import Path
 from typing import Dict, List, Optional
 from tools.csv_tools import CANDIDATE_CSV_HEADERS
@@ -40,15 +41,14 @@ LOGS_DIR = ROOT / "logs"
 DEFAULT_PROFILE = KNOWLEDGE_DIR / "user_preference.txt"
 BACKEND = ROOT / "main.py"
 ENV_STORE = Path.home() / ".env"
-MODEL_CANDIDATES = [
-    "gemini-1.5pro",
-    "gemini-2.0-flash-lite",
-    "gemini-2.0-flash",
-    "gemini-2.0-flash-thinking-exp-01-21",
-    "gemini-2.5-flash-preview-04-17",
-    "gemini-2.5-pro-exp-03-25",
-    "gemini-2.5-pro-preview-03-25",
-]
+MODEL_CFG_FILE = ROOT / "agents/models.yaml"
+
+with MODEL_CFG_FILE.open(encoding="utf-8") as f:
+    _model_cfg = yaml.safe_load(f)
+
+MODEL_CANDIDATES: list[str] = _model_cfg["candidates"]
+MODEL_INFO: dict[str, str] = _model_cfg["info"]
+
 for p in [KNOWLEDGE_DIR, RESULTS_DIR, GRANTS_DIR, LOGS_DIR]:
     p.mkdir(parents=True, exist_ok=True)
 
@@ -198,12 +198,12 @@ if "init" not in st.session_state:
             st.session_state.env_cfg[_k] = os.environ.get(_k, "")
     st.session_state.agent_models = {
         "profile_analyzer": "gemini-2.0-flash",
-        "hypotheses_generator": "gemini-2.0-flash",
+        "hypotheses_generator": "gemini-2.0-flash-thinking-exp-01-21",
         "query_generator": "gemini-2.0-flash-thinking-exp-01-21",
-        "search_expert": "gemini-2.0-flash",
+        "search_expert": "gemini-2.0-flash-lite",
         "report_generator": "gemini-2.0-flash",
         "user_proxy": "gemini-2.0-flash",
-        "investigation_evaluator": "gemini-2.0-flash",
+        "investigation_evaluator": "gemini-2.0-flash-lite",
     }
     st.session_state.page = "workflow"
     st.session_state.job: Optional[LogTailer] = None
@@ -327,11 +327,21 @@ elif st.session_state.page == "api":
 elif st.session_state.page == "models":
     st.markdown("## LLMモデル設定")
     am = st.session_state.agent_models
-    with st.form("model_form"):
-        for a in am:
-            am[a] = st.selectbox(a, MODEL_CANDIDATES, index=MODEL_CANDIDATES.index(am[a]), key=a)
-        if st.form_submit_button("保存"):
-            st.success("更新しました")
+
+    for agent_name in am:
+        st.markdown(f"#### {agent_name}")
+        sel = st.selectbox(
+            "モデルを選択",
+            MODEL_CANDIDATES,
+            index=MODEL_CANDIDATES.index(am[agent_name]),
+            key=f"{agent_name}_sel",
+            format_func=lambda m: f"{m}: {MODEL_INFO.get(m, '')}"
+        )
+        am[agent_name] = sel
+        st.markdown("---")
+
+    if st.button("保存"):
+        st.success("更新しました")
             
 # ---------------------------------------------------------------------------
 # profile stteings page

@@ -1,0 +1,16 @@
+# models.yaml
+candidates:
+  - gemini-2.0-flash-lite
+  - gemini-2.0-flash
+  - gemini-2.0-flash-thinking-exp-01-21
+  - gemini-2.5-flash-preview-04-17
+  - gemini-2.5-pro-exp-03-25
+  - gemini-2.5-pro-preview-03-25
+
+info:
+  gemini-2.0-flash-lite: 低コストモデル 簡単・繰り返しの多い作業に適しています
+  gemini-2.0-flash: 標準モデル 総合的にバランスの良いモデルです
+  gemini-2.0-flash-thinking-exp-01-21: 仮説生成など思考力が必要な作業に適しています
+  gemini-2.5-flash-preview-04-17: 最新モデル 繰り返しの多い作業には適しません
+  gemini-2.5-pro-exp-03-25: googleの最も高性能なモデルの無料版です 繰り返しの多い作業には適しません
+  gemini-2.5-pro-preview-03-25: googleの最も高性能なモデルです 繰り返しの多い作業には適しません

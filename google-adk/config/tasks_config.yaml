@@ -210,7 +210,7 @@ report_and_update_task:
     - 調査タスクから受け取った **全ての** 詳細情報フィールド（`amount`, `eligibility`, `deadline`, `application_process`, `required_documents`, `research_fields`, `duration`, `contact`, `special_conditions` など）。不明な情報は "不明" または "N/A" として含めてください。
     - あなたが決定した `relevance_score` と `completeness_score`。
     - `deadline_status` フィールド（"expired", "active", "unknown"のいずれか）
-    - `investigated` フィールドを 1 に設定。
+    - **`investigated` フィールドを True に設定。**
     - `updated_at` フィールドに現在のタイムスタンプ（例: "YYYY-MM-DDTHH:MM:SS.sssZ" のISO 8601形式）。
 
     **最終出力:**
