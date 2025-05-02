@@ -75,24 +75,29 @@ def _resolve_model(agent_name: str, default: str) -> str:
 # ---------------------------------------------------------------------------
 # Quality-Checker 補助クラス
 # ---------------------------------------------------------------------------
+class CheckStatusAndEscalate_init(BaseAgent):
+    async def _run_async_impl(self, ctx: InvocationContext) -> AsyncGenerator[Event, None]:
+        status = ctx.session.state.get("quality_status_init", "再度csvに書き込んでください")
+        yield Event(author=self.name,
+                    actions=EventActions(escalate=(status == "csv作成完了")))
+        
 class CheckStatusAndEscalate(BaseAgent):
     async def _run_async_impl(self, ctx: InvocationContext) -> AsyncGenerator[Event, None]:
         status = ctx.session.state.get("quality_status", "continue")
         yield Event(author=self.name,
                     actions=EventActions(escalate=(status == "finish")))
-
 # ---------------------------------------------------------------------------
 # LlmAgent 生成ヘルパー
 # ---------------------------------------------------------------------------
 def _llm(name: str,
          default_model: str,
-         goal_key: str,          # ← 追加で受け取り（基本は name と同じ）
+         goal_key: str,         
          task_key: str,
          *,
          tools: List = (),
          output_key: str | None = None,
          temp: float = 0.3) -> LlmAgent:
-    cfg  = AGENTS_CONF.get(goal_key, {})          # ← goal_key で参照
+    cfg  = AGENTS_CONF.get(goal_key, {})         
     goal = cfg.get("goal", "")
     inst = f"goal: {goal}\n\n{_task_desc(task_key)}"
     return LlmAgent(
@@ -124,7 +129,16 @@ def build_agents() -> Dict[str, Any]:
 
     search_expert_init    = _llm("search_expert_Initial", "gemini-2.0-flash",
                                     "search_expert", "generate_initial_grants_list",
-                                    tools=[custom_google_search_tool, csv_writer_tool])
+                                    tools=[custom_google_search_tool, csv_writer_tool],
+                                    output_key="initial_list_generation_result")
+    
+    list_checker = LlmAgent(
+        name="list_checker",
+        model=_resolve_model("list_checker", "gemini-2.0-flash"),
+        instruction="['initial_list_generation_result']を確認し '再度csvに書き込んでください' か 'csv作成完了' だけ返答してください。",
+        generate_content_config=GenerateContentConfig(temperature=0.3),
+        output_key="quality_status_init"
+    )
 
     search_expert_invest   = _llm("search_expert_Investigate", "gemini-2.0-flash",
                                     "search_expert", "investigate_grant",
@@ -156,9 +170,14 @@ def build_agents() -> Dict[str, Any]:
                                     output_key="current_grant_id_selected_raw", temp=0.6)
 
     # --- workflow agents ---
+    initial_loop = LoopAgent(name="InitialInvestigationLoop",
+        sub_agents=[search_expert_init, list_checker, 
+                    CheckStatusAndEscalate_init(name="StopChecker_init")],
+        max_iterations=10)
+
     initial_phase = SequentialAgent(name="InitialGathering",
         sub_agents=[profile_analyzer, hypotheses_generator,
-                    query_generator,  search_expert_init])
+                    query_generator,  initial_loop])
 
     detailed_loop = LoopAgent(name="DetailedInvestigationLoop",
         sub_agents=[search_expert_invest, investigation_eval,
@@ -180,7 +199,9 @@ def build_agents() -> Dict[str, Any]:
         "report_generator": report_generator,
         "user_proxy": user_proxy,
         "stop_checker": CheckStatusAndEscalate(name="StopChecker"),
+        "stop_checker_init": CheckStatusAndEscalate_init(name="StopChecker_init"),
         # ワークフロー
+        "initial_loop_agent": initial_loop,
         "initial_phase_agent": initial_phase,
         "detailed_investigation_loop_agent": detailed_loop,
         "second_phase_agent": second_phase,
