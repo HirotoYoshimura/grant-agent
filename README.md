@@ -109,6 +109,7 @@ Docker は、アプリケーションを開発、移動、実行するための�
 2. VSCode の右下に「Reopen in Container」というポップアップが表示されます。これをクリックします
    - ポップアップが表示されない場合は、`Ctrl+Shift+P` (Windows/Linux) または `Cmd+Shift+P` (Mac) を押してコマンドパレットを開き、「Remote-Containers: Reopen in Container」と入力してエンターキーを押します
 3. VSCode が Dev Container を構築し、リポジトリをコンテナ内で開きます。これには数分かかる場合があります
+4. 一度コンテナが作成されれば、以降はサイドバーの Remote Explorer、上部タブの Dev Containers から grant-agent を選んでクリックすることで構築済みの環境に入ることができます
 
 ### 4. 必要なAPIキーの取得方法
 
@@ -201,7 +202,7 @@ Docker は、アプリケーションを開発、移動、実行するための�
 
 1. サイドバーの「ユーザープロファイル」をクリックします
 2. 研究者プロファイルを入力します:
-   自身の研究に関連するPDFをアップロードし、geminiでプロファイルを自動生成することもできます。
+   論文など自身の研究に関連するPDFアップロードし、geminiでプロファイルを自動生成することもできます。
 
    <details><summary>生成した架空のプロファイル例。</summary>
 
