@@ -3,6 +3,7 @@
 import os
 import json
 import logging
+import time
 from typing import Dict, Any
 from google.adk.tools import FunctionTool
 from googleapiclient.discovery import build
@@ -35,11 +36,10 @@ profile_reader_tool = FunctionTool(func=read_user_profile)
 GOOGLE_CSE_API_KEY = os.environ.get("GOOGLE_CSE_API_KEY") # Platform API Key
 GOOGLE_CSE_ID = os.environ.get("GOOGLE_CSE_ID")  # Custom Search Engine ID
 
-def custom_google_search(query: str, num_results: int) -> Dict[str, Any]:
+def custom_google_search(query: str) -> Dict[str, Any]:
     """Performs Google search using Custom Search Engine API."""
     logger.info(f"Performing Custom Google Search for: {query}")
-    if not num_results:
-        num_results = 10
+    time.sleep(2)
 
     if not GOOGLE_CSE_API_KEY or not GOOGLE_CSE_ID:
         msg = "Google API Key or CSE ID for Custom Search not configured in environment variables."
@@ -47,7 +47,7 @@ def custom_google_search(query: str, num_results: int) -> Dict[str, Any]:
         return {"status": "error", "error_message": msg}
     try:
         service = build("customsearch", "v1", developerKey=GOOGLE_CSE_API_KEY, cache_discovery=False) # cache_discovery=False 追加
-        result = service.cse().list(q=query, cx=GOOGLE_CSE_ID, num=num_results).execute()
+        result = service.cse().list(q=query, cx=GOOGLE_CSE_ID, num=10).execute()
         items = result.get("items", [])
         logger.info(f"Found {len(items)} results via Custom Search.")
         # Format results for the agent
