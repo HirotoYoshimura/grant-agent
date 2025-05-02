@@ -1,5 +1,4 @@
 # main.py
-
 import os
 import yaml
 import asyncio
@@ -8,8 +7,7 @@ from pathlib import Path
 from typing import List, Dict, Any
 import datetime
 import logging
-import csv # Import csv module
-
+import csv 
 # ADK Imports
 from google.adk.runners import Runner
 from google.adk.sessions import InMemorySessionService
@@ -90,8 +88,9 @@ def get_config_value(config_dict: Dict, key: str, default: Any = "") -> Any:
 # ----------------------------------------------------------------------
 
 
-ag = build_agents()                                 # dict 受け取り
+ag = build_agents()
 # ワークフロー複合エージェントを取り出して使う
+initial_loop_agent                = ag["initial_loop_agent"]
 initial_phase_agent                = ag["initial_phase_agent"]
 detailed_investigation_loop_agent  = ag["detailed_investigation_loop_agent"]
 second_phase_agent                 = ag["second_phase_agent"]
