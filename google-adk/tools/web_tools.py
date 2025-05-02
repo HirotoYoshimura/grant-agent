@@ -7,6 +7,7 @@ from bs4 import BeautifulSoup
 from typing import Dict, Any
 from google.adk.tools import FunctionTool, ToolContext # ToolContext for potential stateful use
 import os 
+import time
 from dotenv import load_dotenv
 # Set up logging
 logger = logging.getLogger(__name__)
@@ -23,6 +24,7 @@ _MAX_WEB_TEXT_LENGTH = 100000 # Limit text extraction length
 # --- Helper Function ---
 def _extract_main_content_from_soup(soup: BeautifulSoup, max_length: int) -> str:
     """Helper to extract main text content, limited by length."""
+    time.sleep(2)
     if not soup: return "No content parsed."
     # Remove common non-content tags
     for tag in soup.find_all(['script', 'style', 'nav', 'footer', 'iframe', 'header', 'aside', 'form', 'button', 'input']):
@@ -58,6 +60,7 @@ def browse_web_page(url: str) -> Dict[str, Any]:
         Dict[str, Any]: Dictionary with 'status', 'url', 'content' or 'error_message'.
     """
     logger.info(f"Browsing URL: {url}")
+    time.sleep(1)
     try:
         response = requests.get(url, headers=_WEB_HEADERS, timeout=20)
         response.raise_for_status()

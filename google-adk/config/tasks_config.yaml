@@ -59,7 +59,7 @@ generate_initial_grants_list_task:
     以下の手順で作業してください:
     
     1. クエリ生成者から受け取ったすべての検索クエリを抽出する
-    2. 各クエリを1つずつ検索する
+    2. custom_google_searchを使って、各クエリを1つずつ検索する
     3. 各クエリの結果から、関連する助成金情報を抽出する
     4. 異なる助成金のみを追加し、重複を避ける
     5. 得られた助成金リストを以下の形式で整理する:
@@ -80,31 +80,30 @@ generate_initial_grants_list_task:
        - special_conditions: 特別な条件
        - is_deadline_passed: 締切日が{current_date}時点で過ぎているかどうか（True/False）
       不明な情報については、不明と明記してください。
-
-    クエリ実行の進捗と結果を報告してください。例:
-    - クエリ1 "環境保全 助成金": 3件の助成金を発見
-    - クエリ2 "野生動物保護 研究費": 4件の新規助成金を発見
     
-    少なくとも{min_candidates}件の異なる助成金機会を見つけて、各助成金に一意のIDを付与してください。
-    すべてのクエリを試した結果が合計{min_candidates}件未満の場合は、その結果のみを使用してください。
-    
-    CSVWriterToolを使用してデータを保存する方法:
-    CSVWriterTool(
-        grants_data=[
-            {{
-                "id": "grant_1", 
-                "title": "科学研究費", 
-                "organization": "文部科学省"
-            }},
-            {{
-                "id": "grant_2", 
-                "title": "若手研究者支援", 
-                "organization": "JST"
-            }},
-            ...
-        ]    )
+      少なくとも{min_candidates}件の異なる助成金機会を見つけて、各助成金に一意のIDを付与してください。
+      すべてのクエリを試した結果が合計{min_candidates}件未満の場合は、その結果のみを使用してください。
+      
+    6. write_grants_to_csvを使用してデータを保存する
+        write_grants_to_csv(
+            grants_data=[
+                {{
+                    "id": "grant_1", 
+                    "title": "科学研究費", 
+                    "organization": "文部科学省"
+                    ...
+                }},
+                {{
+                    "id": "grant_2", 
+                    "title": "若手研究者支援", 
+                    "organization": "JST"
+                    ...
+                }},
+                ...
+            ]    
+          )
         
-  expected_output: 基本的な助成金情報のCSVファイル（少なくとも10件の助成金候補を含む）
+  expected_output: 基本的な助成金情報のCSVファイル
   agent: search_expert
 
 select_grant_to_investigate_task:
@@ -210,7 +209,7 @@ report_and_update_task:
     - 調査タスクから受け取った **全ての** 詳細情報フィールド（`amount`, `eligibility`, `deadline`, `application_process`, `required_documents`, `research_fields`, `duration`, `contact`, `special_conditions` など）。不明な情報は "不明" または "N/A" として含めてください。
     - あなたが決定した `relevance_score` と `completeness_score`。
     - `deadline_status` フィールド（"expired", "active", "unknown"のいずれか）
-    - `investigated` フィールドを 1 に設定。
+    - **`investigated` フィールドを True に設定。**
     - `updated_at` フィールドに現在のタイムスタンプ（例: "YYYY-MM-DDTHH:MM:SS.sssZ" のISO 8601形式）。
 
     **最終出力:**

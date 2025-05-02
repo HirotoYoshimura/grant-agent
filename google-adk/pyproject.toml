@@ -13,7 +13,6 @@ dependencies = [
     "langchain==0.3.24",
     "google-api-python-client==2.167.0",
     "pymupdf4llm==0.0.17",
-    "playwright==1.51.0",
     "html2text==2025.4.15",
     "streamlit==1.44.1",
     "streamlit-mermaid==0.3.0",
