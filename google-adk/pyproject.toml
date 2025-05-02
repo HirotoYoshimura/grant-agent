@@ -19,6 +19,6 @@ dependencies = [
     "streamlit-mermaid==0.3.0",
     "streamlit-autorefresh==1.0.1",
     "google-adk==0.1.0",
-    "bs4=-0.0.2",
+    "bs4==0.0.2",
 ]
 
