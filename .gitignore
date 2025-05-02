@@ -4,7 +4,6 @@ __pycache__/
 .DS_Store
 *.pdf
 user_preference.txt
-*.json
 cache
 *.log
 venv
