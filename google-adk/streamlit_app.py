@@ -198,12 +198,12 @@ if "init" not in st.session_state:
             st.session_state.env_cfg[_k] = os.environ.get(_k, "")
     st.session_state.agent_models = {
         "profile_analyzer": "gemini-2.0-flash",
-        "hypotheses_generator": "gemini-2.0-flash-thinking-exp-01-21",
+        "hypotheses_generator": "gemini-2.0-flash",
         "query_generator": "gemini-2.0-flash-thinking-exp-01-21",
         "search_expert": "gemini-2.0-flash-lite",
         "report_generator": "gemini-2.0-flash",
-        "user_proxy": "gemini-2.0-flash",
-        "investigation_evaluator": "gemini-2.0-flash-lite",
+        "user_proxy": "gemini-2.0-flash-thinking-exp-01-21",
+        "investigation_evaluator": "gemini-2.0-flash",
     }
     st.session_state.page = "workflow"
     st.session_state.job: Optional[LogTailer] = None
@@ -355,8 +355,8 @@ elif st.session_state.page == "profile":
 elif st.session_state.page == "search":
     st.markdown("## 助成金検索を実行")
 
-    grants_cnt = st.number_input("詳細調査する助成金数", 1, 10, 3)
-    min_cand = st.number_input("候補助成金の最低件数", 5, 100, 20)
+    grants_cnt = st.number_input("詳細調査する助成金数", 1, 10, 1)
+    min_cand = st.number_input("候補助成金の最低件数", 5, 100, 10)
     append_mode = st.radio("検索モード", ("新規検索", "既存結果に追記")) == "既存結果に追記"
     progress_ph = st.empty()
 
