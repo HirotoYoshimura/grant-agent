@@ -16,6 +16,7 @@ import sys
 import threading
 import time
 import csv
+import signal
 from pathlib import Path
 from typing import Dict, List, Optional
 from tools.csv_tools import CANDIDATE_CSV_HEADERS
@@ -41,6 +42,7 @@ BACKEND = ROOT / "main.py"
 ENV_STORE = Path.home() / ".env"
 MODEL_CANDIDATES = [
     "gemini-1.5pro",
+    "gemini-2.0-flash-lite",
     "gemini-2.0-flash",
     "gemini-2.0-flash-thinking-exp-01-21",
     "gemini-2.5-flash-preview-04-17",
@@ -229,6 +231,10 @@ with st.sidebar:
         st.session_state.page = "search"
     if st.button("結果確認", use_container_width=True):
         st.session_state.page = "results"
+    if st.button("アプリを終了", use_container_width=True, type="primary"):
+        st.info("アプリを終了します。ブラウザを閉じてください。")
+        time.sleep(1)
+        os.kill(os.getpid(), signal.SIGTERM)
 
 # ---------------------------------------------------------------------------
 # Workflow page
