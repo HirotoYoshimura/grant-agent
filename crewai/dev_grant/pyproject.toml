@@ -1,0 +1,34 @@
+[project]
+name = "dev_grant"
+version = "0.1.0"
+description = "dev_grant using crewAI"
+authors = [
+    { name = "Your Name", email = "you@example.com" },
+]
+requires-python = ">=3.10,<3.13"
+dependencies = [
+    "crewai[tools]>=0.105.0,<1.0.0",
+    "pymupdf4llm==0.0.17",
+    "PyPDF2",
+    "langchain-google-genai",
+    "google-api-python-client",
+    "pymupdf4llm",
+    "browserbase>=1.2.0",
+    "playwright",
+    "html2text",
+    "streamlit",
+    "streamlit-mermaid",
+]
+
+[project.scripts]
+dev_grant = "dev_grant.main:run"
+run_crew = "dev_grant.main:run"
+train = "dev_grant.main:train"
+replay = "dev_grant.main:replay"
+test = "dev_grant.main:test"
+
+[build-system]
+requires = [
+    "hatchling",
+]
+build-backend = "hatchling.build"
