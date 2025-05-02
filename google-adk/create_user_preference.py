@@ -5,20 +5,21 @@ import os
 import glob
 import dotenv
 import pymupdf4llm  # pymupdf4llm をPDF読み取り用にインポート
-from langchain import LLMChain, PromptTemplate
+from langchain.chains import LLMChain
+from langchain_core.prompts import PromptTemplate
 from langchain_google_genai import ChatGoogleGenerativeAI
 
 dotenv.load_dotenv()
 
 # --- 基本設定 ---
-GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
-USER_PDF_DIR = "knowledge/user_info_pdfs"   # PDFが格納されているディレクトリ
+GEMINI_API_KEY = os.getenv("GOOGLE_API_KEY")
+USER_PDF_DIR = "knowledge"   # PDFが格納されているディレクトリ
 OUTPUT_FILE = "knowledge/user_preference.txt"  # 整理済みユーザー情報の出力先
 
 # --- LLMの初期化 ---
 chat = ChatGoogleGenerativeAI(
     api_key=GEMINI_API_KEY,
-    model="gemini-2.0-flash-lite-preview-02-05"
+    model="gemini-2.0-flash"
 )
 
 # (1) PDFからの生テキスト抽出
