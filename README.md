@@ -98,7 +98,7 @@ Docker は、アプリケーションを開発、移動、実行するための�
 3. 「Git: Clone」と入力し、エンターキーを押します
 4. リポジトリの URL を入力するよう求められたら、以下を入力します:
    ```
-   https://github.com/LTS-AnalyticsTeam/grant_Agent.git
+   https://github.com/HirotoYoshimura/grant-agent.git
    ```
 
 5. リポジトリを保存するローカルディレクトリを選択します
