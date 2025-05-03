@@ -21,7 +21,6 @@ import yaml
 from pathlib import Path
 from typing import Dict, List, Optional
 from tools.csv_tools import CANDIDATE_CSV_HEADERS
-from create_user_preference import create_user_preference_file
 
 import pandas as pd
 import streamlit as st
@@ -168,6 +167,7 @@ def page_profile() -> None:
         st.success(f"{len(pdfs)} 件の PDF を保存しました")
 
         if st.button("PDF からプロファイルを自動生成", use_container_width=True):
+            from create_user_preference import create_user_preference_file
             with st.spinner("LLM で整理中..."):
                 create_user_preference_file(str(KNOWLEDGE_DIR), str(profile_path))
             st.success("user_preference.txt を更新しました。ページを再読み込みすると内容が反映されます。")

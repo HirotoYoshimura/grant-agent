@@ -18,7 +18,7 @@ OUTPUT_FILE = "knowledge/user_preference.txt"  # 整理済みユーザー情報�
 
 # --- LLMの初期化 ---
 chat = ChatGoogleGenerativeAI(
-    api_key=GEMINI_API_KEY,
+    google_api_key=GEMINI_API_KEY,
     model="gemini-2.0-flash"
 )
 
