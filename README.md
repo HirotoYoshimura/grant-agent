@@ -61,6 +61,31 @@ graph TD
 
 ### 1. 必要なソフトウェアのインストール
 
+#### Gitのインストール (手動でリポジトリのzipファイルをダウンロードする場合省略可）
+**Windows の場合:**
+| 手順 | 操作 |
+|------|------|
+| 1 | 公式サイト <https://git-scm.com/download/win> から **Git for Windows** インストーラをダウンロード |
+| 2 | インストーラを起動し、基本は既定値のまま **Next** で進む<br>（「Git from the command line …」「OpenSSH」を選択しておくと便利） |
+| 3 | インストール後 **Git Bash** を開き `git --version` で確認 |
+
+
+**Mac の場合:**
+
+```bash
+# Homebrew が未インストールの場合は https://brew.sh/ を参照
+brew install git
+git --version
+```
+
+**Linux の場合:**
+| ディストリビューション           | コマンド                                      |
+| --------------------- | ----------------------------------------- |
+| Debian / Ubuntu       | `sudo apt update && sudo apt install git` |
+| Fedora / RHEL / Rocky | `sudo dnf install git`                    |
+| Arch / Manjaro        | `sudo pacman -S git`                      |
+
+
 #### VSCode (Visual Studio Code) のインストール
 
 1. [Visual Studio Code公式サイト](https://code.visualstudio.com/)にアクセスします
@@ -91,7 +116,7 @@ Docker は、アプリケーションを開発、移動、実行するための�
 3. 検索ボックスに「Dev Containers」と入力します
 4. 「Dev Containers」拡張機能（Microsoft が提供）をクリックし、「インストール」ボタンをクリックします
 
-### 2. リポジトリのクローン
+### 2. リポジトリのクローン　（手動でリポジトリのzipをダウンロードする場合省略可）
 
 1. VSCode を起動します
 2. `Ctrl+Shift+P` (Windows/Linux) または `Cmd+Shift+P` (Mac) を押して、コマンドパレットを開きます
