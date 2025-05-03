@@ -12,15 +12,15 @@ from langchain_google_genai import ChatGoogleGenerativeAI
 dotenv.load_dotenv()
 
 # --- 基本設定 ---
-GEMINI_API_KEY = os.getenv("GOOGLE_API_KEY")
 USER_PDF_DIR = "knowledge"   # PDFが格納されているディレクトリ
 OUTPUT_FILE = "knowledge/user_preference.txt"  # 整理済みユーザー情報の出力先
 
 # --- LLMの初期化 ---
-chat = ChatGoogleGenerativeAI(
-    google_api_key=GEMINI_API_KEY,
-    model="gemini-2.0-flash"
-)
+def _build_chat(model: str = "gemini-2.0-flash"):
+    """呼び出し時にだけ LLM を生成する"""
+    if not os.getenv("GOOGLE_API_KEY"):
+        raise RuntimeError("GOOGLE_API_KEY が設定されていません")
+    return ChatGoogleGenerativeAI(model=model, google_api_key=os.getenv("GOOGLE_API_KEY"))
 
 # (1) PDFからの生テキスト抽出
 def get_raw_text_from_pdfs(directory: str) -> str:
@@ -52,7 +52,7 @@ def organize_user_preferences(raw_text: str) -> str:
 
 """
     organize_prompt = PromptTemplate(template=organize_template, input_variables=["raw_text"])
-    organize_chain = LLMChain(llm=chat, prompt=organize_prompt)
+    organize_chain = LLMChain(llm=_build_chat(), prompt=organize_prompt)
     organized_text = organize_chain.run(raw_text=raw_text)
     return organized_text.strip()
 

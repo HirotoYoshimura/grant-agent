@@ -24,7 +24,7 @@ from tools.csv_tools import CANDIDATE_CSV_HEADERS
 
 import pandas as pd
 import streamlit as st
-from dotenv import load_dotenv
+import dotenv
 from streamlit_autorefresh import st_autorefresh
 import streamlit.components.v1 as components
 
@@ -39,7 +39,7 @@ csv_path = GRANTS_DIR / "grants_candidates.csv"
 LOGS_DIR = ROOT / "logs"
 DEFAULT_PROFILE = KNOWLEDGE_DIR / "user_preference.txt"
 BACKEND = ROOT / "main.py"
-ENV_STORE = Path.home() / ".env"
+ENV_STORE = ROOT / ".env"
 MODEL_CFG_FILE = ROOT / "agents/models.yaml"
 
 with MODEL_CFG_FILE.open(encoding="utf-8") as f:
@@ -55,8 +55,20 @@ for p in [KNOWLEDGE_DIR, RESULTS_DIR, GRANTS_DIR, LOGS_DIR]:
 # Logging & env
 # ---------------------------------------------------------------------------
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
-load_dotenv()
 
+def load_env_dict() -> dict[str, str]:
+    """KEY=VALUE 形式の .env を dict に読み込む（無いなら空 dict）"""
+    if ENV_STORE.exists():
+        return {k: v for k, v in dotenv.dotenv_values(str(ENV_STORE)).items() if v}
+    return {}
+
+def save_env_dict(cfg: dict[str, str]) -> None:
+    """dict を .env に保存し、同時に os.environ へ反映"""
+    with ENV_STORE.open("w", encoding="utf-8") as f:
+        for k, v in cfg.items():
+            if v:                          # 空文字は書かない
+                f.write(f"{k}={v}\n")
+    os.environ.update({k: v for k, v in cfg.items() if v})
 # ---------------------------------------------------------------------------
 # Env helpers
 # ---------------------------------------------------------------------------
@@ -167,10 +179,18 @@ def page_profile() -> None:
         st.success(f"{len(pdfs)} 件の PDF を保存しました")
 
         if st.button("PDF からプロファイルを自動生成", use_container_width=True):
-            from create_user_preference import create_user_preference_file
-            with st.spinner("LLM で整理中..."):
-                create_user_preference_file(str(KNOWLEDGE_DIR), str(profile_path))
-            st.success("user_preference.txt を更新しました。ページを再読み込みすると内容が反映されます。")
+            try:
+                import importlib, sys
+                cup = importlib.reload(sys.modules["create_user_preference"]) \
+                    if "create_user_preference" in sys.modules \
+                    else importlib.import_module("create_user_preference")
+
+                cup.create_user_preference_file(str(KNOWLEDGE_DIR), str(profile_path))
+                st.success("user_preference.txt を更新しました。ページを再読み込みしてください。")
+
+            except RuntimeError as e:
+                st.error(f"❌ {e}\n\n左メニュー『API設定』で GOOGLE_API_KEY を入力してから再実行してください。")
+
 
 # ---------------------------------------------------------------------------
 # CSS & log window helper
@@ -191,7 +211,7 @@ def show_log():
 # ---------------------------------------------------------------------------
 if "init" not in st.session_state:
     st.session_state.init = True
-    st.session_state.env_cfg = _load_env()
+    st.session_state.env_cfg = load_env_dict()
     API_KEYS = ["GOOGLE_CSE_API_KEY", "GOOGLE_CSE_ID", "GOOGLE_API_KEY"]
     for _k in API_KEYS:
         if not st.session_state.env_cfg.get(_k):
@@ -306,8 +326,9 @@ elif st.session_state.page == "api":
         for k in ["GOOGLE_CSE_API_KEY", "GOOGLE_CSE_ID", "GOOGLE_API_KEY"]:
             cfg[k] = st.text_input(k, cfg.get(k, ""), type="password")
         if st.form_submit_button("保存"):
-            _save_env(cfg); st.success("保存しました")
-
+            save_env_dict(cfg)
+            st.session_state.env_cfg = cfg
+            st.success(".env を保存しました")
 
 # ---------------------------------------------------------------------------
 # API settings page
