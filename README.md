@@ -85,12 +85,15 @@ git --version
 | Fedora / RHEL / Rocky | `sudo dnf install git`                    |
 | Arch / Manjaro        | `sudo pacman -S git`                      |
 
+---
 
 #### VSCode (Visual Studio Code) のインストール
 
 1. [Visual Studio Code公式サイト](https://code.visualstudio.com/)にアクセスします
 2. お使いのオペレーティングシステム（Windows、Mac、Linux）に適したインストーラーをダウンロードします
 3. ダウンロードしたインストーラーを実行し、画面の指示に従ってインストールを完了します
+
+---
 
 #### Docker のインストール
 
@@ -109,12 +112,16 @@ Docker は、アプリケーションを開発、移動、実行するための�
 **Linux の場合:**
 1. [Docker Engine](https://docs.docker.com/engine/install/)のドキュメントに従ってインストールします
 
+---
+
 #### Dev Containers 拡張機能のインストール
 
 1. VSCode を起動します
 2. 左側のアクティビティバーで拡張機能アイコン（四角形のアイコン）をクリックします
 3. 検索ボックスに「Dev Containers」と入力します
 4. 「Dev Containers」拡張機能（Microsoft が提供）をクリックし、「インストール」ボタンをクリックします
+
+---
 
 ### 2. リポジトリのクローン　（手動でリポジトリのzipをダウンロードする場合省略可）
 
