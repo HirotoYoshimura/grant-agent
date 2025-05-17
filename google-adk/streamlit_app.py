@@ -48,6 +48,20 @@ with MODEL_CFG_FILE.open(encoding="utf-8") as f:
 MODEL_CANDIDATES: list[str] = _model_cfg["candidates"]
 MODEL_INFO: dict[str, str] = _model_cfg["info"]
 
+# ---------------------------------------------------------------------------
+# Default per‑agent models
+# ---------------------------------------------------------------------------
+DEFAULT_AGENT_MODELS_GEMINI: Dict[str, str] = {
+    "profile_analyzer": "gemini-2.0-flash",
+    "hypotheses_generator": "gemini-2.0-flash",
+    "query_generator": "gemini-2.0-flash-thinking-exp-01-21",
+    "search_expert": "gemini-2.0-flash-lite",
+    "report_generator": "gemini-2.0-flash",
+    "user_proxy": "gemini-2.0-flash-thinking-exp-01-21",
+    "investigation_evaluator": "gemini-2.0-flash",
+}
+DEFAULT_OLLAMA_MODEL = "ollama_chat/myaniu/qwen2.5-1m:latest"
+
 for p in [KNOWLEDGE_DIR, RESULTS_DIR, GRANTS_DIR, LOGS_DIR]:
     p.mkdir(parents=True, exist_ok=True)
 
@@ -216,21 +230,15 @@ if "init" not in st.session_state:
     for _k in API_KEYS:
         if not st.session_state.env_cfg.get(_k):
             st.session_state.env_cfg[_k] = os.environ.get(_k, "")
-    st.session_state.agent_models = {
-        "profile_analyzer": "gemini-2.0-flash",
-        "hypotheses_generator": "gemini-2.0-flash",
-        "query_generator": "gemini-2.0-flash-thinking-exp-01-21",
-        "search_expert": "gemini-2.0-flash-lite",
-        "report_generator": "gemini-2.0-flash",
-        "user_proxy": "gemini-2.0-flash-thinking-exp-01-21",
-        "investigation_evaluator": "gemini-2.0-flash",
-    }
+    st.session_state.agent_models = DEFAULT_AGENT_MODELS_GEMINI.copy()
+    st.session_state.prev_use_ollama = False
     st.session_state.page = "workflow"
     st.session_state.job: Optional[LogTailer] = None
     st.session_state.log_text = "実行ログ:\n"
     st.session_state.log_file: Optional[Path] = None
     st.session_state.total_grants = 0
     st.session_state.current_progress = 0
+    st.session_state.use_ollama = False     # ローカル LLM フラグ
 
 # ---------------------------------------------------------------------------
 # Streamlit layout & navigation
@@ -349,6 +357,25 @@ elif st.session_state.page == "models":
     st.markdown("## LLMモデル設定")
     am = st.session_state.agent_models
 
+    # --- Ollama toggle ----------------------------------------------------
+    prev_ollama = bool(st.session_state.get("prev_use_ollama", False))
+    st.markdown("---")
+    st.session_state.use_ollama = st.checkbox(
+        "ローカル Ollama を使用する (USE_OLLAMA)",
+        value=st.session_state.get("use_ollama", False)
+    )
+
+    # 自動デフォルト切替え
+    if st.session_state.use_ollama and not prev_ollama:
+        # Ollama 有効化 → すべて既定 Ollama モデルに
+        for k in am.keys():
+            am[k] = DEFAULT_OLLAMA_MODEL
+    elif not st.session_state.use_ollama and prev_ollama:
+        # Ollama 無効化 → Gemini 既定にリセット
+        am.update(DEFAULT_AGENT_MODELS_GEMINI)
+
+    st.markdown("---")
+
     for agent_name in am:
         st.markdown(f"#### {agent_name}")
         sel = st.selectbox(
@@ -363,6 +390,8 @@ elif st.session_state.page == "models":
 
     if st.button("保存"):
         st.success("更新しました")
+
+    st.session_state.prev_use_ollama = st.session_state.use_ollama
             
 # ---------------------------------------------------------------------------
 # profile stteings page
@@ -403,8 +432,19 @@ elif st.session_state.page == "search":
 
         # env overrides
         os.environ.update({k: v for k, v in st.session_state.env_cfg.items() if v})
+
+        use_ollama = bool(st.session_state.get("use_ollama"))
+        # USE_OLLAMA フラグ
+        if use_ollama:
+            os.environ["USE_OLLAMA"] = "1"
+        else:
+            os.environ.pop("USE_OLLAMA", None)
+
+        # モデル指定 (prefix 切替え)
+        prefix = "OLLAMA_MODEL_" if use_ollama else "MODEL_"
         for ag, model in st.session_state.agent_models.items():
-            os.environ[f"MODEL_{ag.upper()}"] = model
+            os.environ[f"{prefix}{ag.upper()}"] = model
+
         os.environ["APPEND_MODE"] = "true"
         os.environ["MIN_CANDIDATES"] = str(min_cand)
         st.session_state.job = LogTailer(cmd, log_file)

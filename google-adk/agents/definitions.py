@@ -11,7 +11,15 @@ from pathlib import Path
 from typing import Dict, Any, List, AsyncGenerator, Optional
 
 import yaml
-from google.genai.types import GenerateContentConfig
+ # Gemini SDK (optional). Absent when running in Ollama‑only mode.
+try:
+    from google.genai.types import GenerateContentConfig           # type: ignore
+except ImportError:                                                # pragma: no cover
+    GenerateContentConfig = None
+
+from google.adk.models.lite_llm import LiteLlm
+# USE_OLLAMA=1 にするとローカル Ollama モード
+USE_OLLAMA = os.getenv("USE_OLLAMA", "0") == "1"
 from google.adk.agents import LlmAgent, BaseAgent, SequentialAgent, LoopAgent
 from google.adk.agents.invocation_context import InvocationContext
 from google.adk.events import Event, EventActions
@@ -62,6 +70,18 @@ def _base(agent_name: str) -> str:
        return "_".join(parts[:-1])
    return agent_name
 
+# Gemini to Ollama model mapping (all values set to qwen2.5-1m:latest)
+_GEMINI_TO_OLLAMA: Dict[str, str] = {
+    "gemini-2.0-flash": "myaniu/qwen2.5-1m:latest",
+    "gemini-2.0-flash-thinking-exp-01-21": "myaniu/qwen2.5-1m:latest",
+    "gemini-2.5-flash-preview-04-17": "myaniu/qwen2.5-1m:latest",
+    "gemini-2.5-pro-exp-03-25": "myaniu/qwen2.5-1m:latest",
+    "gemini-2.5-pro-preview-03-25": "myaniu/qwen2.5-1m:latest",
+}
+
+def _map_gemini_to_ollama(key: str) -> str:
+    return _GEMINI_TO_OLLAMA.get(key, "myaniu/qwen2.5-1m:latest")
+
 def _resolve_model(agent_name: str, default: str) -> str:
     """
     優先度:  
@@ -69,7 +89,16 @@ def _resolve_model(agent_name: str, default: str) -> str:
        例) search_expert → MODEL_SEARCH_EXPERT  
     2. デフォルト値
     """
-    env_key = f"MODEL_{_base(agent_name).upper()}"
+    base = _base(agent_name).upper()
+    if USE_OLLAMA:
+        env_key = f"OLLAMA_MODEL_{base}"
+        model_str = os.getenv(env_key, _map_gemini_to_ollama(default))
+        # provider 接頭辞が無ければ補完
+        if not model_str.startswith("ollama_chat/"):
+            model_str = f"ollama_chat/{model_str}"
+        return LiteLlm(model=model_str)
+
+    env_key = f"MODEL_{base}"
     return os.getenv(env_key, default)
 
 # ---------------------------------------------------------------------------
@@ -100,12 +129,17 @@ def _llm(name: str,
     cfg  = AGENTS_CONF.get(goal_key, {})         
     goal = cfg.get("goal", "")
     inst = f"goal: {goal}\n\n{_task_desc(task_key)}"
+
+    gen_cfg = None
+    if not USE_OLLAMA and GenerateContentConfig is not None:
+        gen_cfg = GenerateContentConfig(temperature=temp)
+
     return LlmAgent(
         name=name,
         model=_resolve_model(name, default_model),
         description=cfg.get("backstory", ""),
         instruction=inst,
-        generate_content_config=GenerateContentConfig(temperature=temp),
+        generate_content_config=gen_cfg,
         tools=list(tools),
         output_key=output_key,
     )
