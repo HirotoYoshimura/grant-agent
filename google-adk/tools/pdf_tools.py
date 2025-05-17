@@ -74,8 +74,10 @@ def download_and_extract_pdf_text(url: str) -> Dict[str, Any]:
         logger.error(f"Error downloading/extracting PDF from {url}: {str(e)}")
         return {"status": "error", "error_message": f"Failed to process PDF: {str(e)}"}
 
-# Map to the name requested by user
-pdf_downloader_tool = FunctionTool(func=download_and_extract_pdf_text)
+def pdf_downloader_tool(url: str) -> Dict[str, Any]:
+    return download_and_extract_pdf_text(url)
+
+pdf_downloader_tool = FunctionTool(pdf_downloader_tool)
 
 
 # --- Local PDF Reader Tool (Markdown) ---
@@ -105,4 +107,7 @@ def read_local_pdf_markdown(file_path: str) -> Dict[str, Any]:
         logger.error(f"Error reading local PDF {file_path}: {str(e)}")
         return {"status": "error", "error_message": f"Error reading PDF: {str(e)}"}
 
-pdf_reader_tool = FunctionTool(func=read_local_pdf_markdown)
+def pdf_reader_tool(file_path: str) -> Dict[str, Any]:
+    return read_local_pdf_markdown(file_path)
+
+pdf_reader_tool = FunctionTool(pdf_reader_tool)

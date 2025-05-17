@@ -32,8 +32,17 @@ def read_user_profile(**kwargs) -> Dict[str, Any]:
     except Exception as e:
         logger.error(f"Error reading user profile from {file_path}: {str(e)}")
         return {"status": "error", "error_message": f"Failed to read profile: {str(e)}", "file_path": file_path,}
-profile_reader_tool = FunctionTool(func=read_user_profile)
 
+# --- FunctionTool: official name is analyze_profile ---
+
+def analyze_profile(**kwargs) -> Dict[str, Any]:
+    """Alias for read_user_profile ensuring tool name 'analyze_profile'."""
+    return read_user_profile(**kwargs)
+
+analyze_profile_tool = FunctionTool(analyze_profile)
+
+# Maintain backward compatibility variable
+profile_reader_tool = analyze_profile_tool
 
 # --- Custom Google Search Tool (using CSE API) ---
 GOOGLE_CSE_API_KEY = os.environ.get("GOOGLE_CSE_API_KEY") # Platform API Key

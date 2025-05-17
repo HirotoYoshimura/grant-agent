@@ -1,4 +1,3 @@
-
 """
 Streamlit UI for Grant-Search ADK
 """
@@ -60,7 +59,7 @@ DEFAULT_AGENT_MODELS_GEMINI: Dict[str, str] = {
     "user_proxy": "gemini-2.0-flash-thinking-exp-01-21",
     "investigation_evaluator": "gemini-2.0-flash",
 }
-DEFAULT_OLLAMA_MODEL = "gemma3:27b-it-qat"
+DEFAULT_OLLAMA_MODEL = "llama3.2:latest"
 
 for p in [KNOWLEDGE_DIR, RESULTS_DIR, GRANTS_DIR, LOGS_DIR]:
     p.mkdir(parents=True, exist_ok=True)
@@ -378,10 +377,20 @@ elif st.session_state.page == "models":
 
     for agent_name in am:
         st.markdown(f"#### {agent_name}")
+        # 候補リスト: Ollama モードなら Gemini を除外 / それ以外は Gemini 系のみ
+        if st.session_state.use_ollama:
+            cand_list = [m for m in MODEL_CANDIDATES if not m.startswith("gemini")]
+        else:
+            cand_list = [m for m in MODEL_CANDIDATES if m.startswith("gemini")]
+
+        # もし現在モデルが候補に無ければ先頭を選択
+        if am[agent_name] not in cand_list:
+            cand_list = cand_list + [am[agent_name]]  # preserve current value at end
+
         sel = st.selectbox(
             "モデルを選択",
-            MODEL_CANDIDATES,
-            index=MODEL_CANDIDATES.index(am[agent_name]),
+            cand_list,
+            index=cand_list.index(am[agent_name]) if am[agent_name] in cand_list else 0,
             key=f"{agent_name}_sel",
             format_func=lambda m: f"{m}: {MODEL_INFO.get(m, '')}"
         )

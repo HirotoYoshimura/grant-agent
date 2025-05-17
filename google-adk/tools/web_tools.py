@@ -77,12 +77,15 @@ def browse_web_page(url: str) -> Dict[str, Any]:
         logger.error(f"Error browsing {url}: {e}")
         return {"status": "error", "url": url, "error_message": f"Browsing Error: {e}"}
 
-# Map to the names requested by the user
-web_scraper_tool = FunctionTool(func=browse_web_page) # Use for general scraping/content fetching
+# Wrapper function to enforce tool name
+def web_scraper_tool(url: str) -> Dict[str, Any]:
+    return browse_web_page(url)
+
+web_scraper_tool = FunctionTool(web_scraper_tool)
+
 # 'web_navigator_tool' implies state, which isn't implemented here.
 # We'll alias the browser tool for now, but stateful navigation is different.
 web_navigator_tool = web_scraper_tool
-
 
 # --- Link Extractor Tool ---
 def extract_links_from_page(url: str) -> Dict[str, Any]:
@@ -128,4 +131,7 @@ def extract_links_from_page(url: str) -> Dict[str, Any]:
         logger.error(f"Error extracting links from {url}: {e}")
         return {"status": "error", "url": url, "error_message": f"Link Extraction Error: {e}"}
 
-adk_extract_links_tool = FunctionTool(func=extract_links_from_page)
+def adk_extract_links_tool(url: str) -> Dict[str, Any]:
+    return extract_links_from_page(url)
+
+adk_extract_links_tool = FunctionTool(adk_extract_links_tool)

@@ -103,10 +103,16 @@ def write_grants_to_csv(grants_data: List[Dict[str, Any]]) -> Dict[str, Any]:
         logger.exception("Failed to write CSV: %s", exc)
         return {"status": "error", "error_message": str(exc)}
 
-csv_writer_tool = FunctionTool(func=write_grants_to_csv)
+# Re-define FunctionTools with explicit names so that LLM sees the expected tool names in prompts.
 
 # ----------------------------------------------------------------------------
-# CSV Reader
+# CSV Writer (name: write_grants_to_csv) – already matches prompts
+# ----------------------------------------------------------------------------
+
+csv_writer_tool = FunctionTool(write_grants_to_csv)
+
+# ----------------------------------------------------------------------------
+# CSV Reader (name: CSVReaderTool)
 # ----------------------------------------------------------------------------
 
 def read_grants_from_csv(input_path: str) -> Dict[str, Any]:
@@ -129,10 +135,15 @@ def read_grants_from_csv(input_path: str) -> Dict[str, Any]:
         logger.exception("Failed to read CSV: %s", exc)
         return {"status": "error", "error_message": str(exc), "data": []}
 
-csv_reader_tool = FunctionTool(func=read_grants_from_csv)
+# Wrapper to expose desired tool name
+
+def CSVReaderTool(input_path: str) -> Dict[str, Any]:
+    return read_grants_from_csv(input_path)
+
+csv_reader_tool = FunctionTool(CSVReaderTool)
 
 # ----------------------------------------------------------------------------
-# CSV Updater
+# CSV Updater (name: CSVUpdaterTool)
 # ----------------------------------------------------------------------------
 
 def update_grant_in_csv(grant_id: str, update_data: Dict[str, Any], csv_path: str) -> Dict[str, Any]:
@@ -166,4 +177,7 @@ def update_grant_in_csv(grant_id: str, update_data: Dict[str, Any], csv_path: st
 
     return {"status": "success", "message": "Grant updated."}
 
-csv_updater_tool = FunctionTool(func=update_grant_in_csv)
+def CSVUpdaterTool(grant_id: str, update_data: Dict[str, Any], csv_path: str) -> Dict[str, Any]:
+    return update_grant_in_csv(grant_id, update_data, csv_path)
+
+csv_updater_tool = FunctionTool(CSVUpdaterTool)
