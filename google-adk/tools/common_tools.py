@@ -1,23 +1,26 @@
+#!/usr/bin/env python3
 # tools/common_tools.py
 
 import os
 import json
 import logging
 import time
+from pathlib import Path
 from typing import Dict, Any
 from google.adk.tools import FunctionTool
 from googleapiclient.discovery import build
 from dotenv import load_dotenv
 
 # Load environment variables from .env file
-load_dotenv("/workspace/google-adk/.env")
+load_dotenv("../.env")
 
 # Set up logging
 logger = logging.getLogger(__name__)
 
 # --- User Profile Reader Tool ---
-def read_user_profile() -> Dict[str, Any]:
-    file_path = "/workspace/google-adk/knowledge/user_preference.txt"
+def read_user_profile(**kwargs) -> Dict[str, Any]:
+    # kwargs に何らかの引数が渡されてきても、ここでは使用しない
+    file_path = str(Path(__file__).resolve().parent.parent / "knowledge" / "user_preference.txt")
     logger.info(f"Attempting to read user profile from: {file_path}")
     try:
         if not os.path.exists(file_path):

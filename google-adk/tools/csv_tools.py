@@ -53,7 +53,7 @@ def write_grants_to_csv(grants_data: List[Dict[str, Any]]) -> Dict[str, Any]:
       always has the full :pydata:`CANDIDATE_CSV_HEADERS` schema.
     """
 
-    output_path = "/workspace/google-adk/results/grants_data/grants_candidates.csv"
+    output_path = "../results/grants_data/grants_candidates.csv"
     append = os.environ.get("APPEND_MODE", "").lower() in {"true", "1", "yes"}
     abs_path = os.path.abspath(output_path)
 

@@ -6,8 +6,8 @@ candidates:
   - gemini-2.5-flash-preview-04-17
   - gemini-2.5-pro-exp-03-25
   - gemini-2.5-pro-preview-03-25
-  - ollama_chat/myaniu/qwen2.5-1m:latest
-  - ollama_chat/qwen3:latest
+  - myaniu/qwen2.5-1m:latest
+  - gemma3:27b-it-qat
 
 
 info:
@@ -17,5 +17,5 @@ info:
   gemini-2.5-flash-preview-04-17: googleの最新モデル 思考力と精度のバランスが良いモデルです。
   gemini-2.5-pro-exp-03-25: googleの最も高性能なモデルの試験運用版 深く思考し高精度な回答をしますが、繰り返しの多い作業には適しません
   gemini-2.5-pro-preview-03-25: googleの最も高性能なモデル 深く思考し高精度な回答をしますが、繰り返しの多い作業には適しません
-  ollama_chat/myaniu/qwen2.5-1m:latest: OllamaのGemma3モデルの量子化版
-  ollama_chat/qwen3:latest: OllamaのQwen3モデルの最新版
+  myaniu/qwen2.5-1m:latest: OllamaのGemma3モデルの量子化版
+  gemma3:27b-it-qat: OllamaのQwen3モデルの最新版

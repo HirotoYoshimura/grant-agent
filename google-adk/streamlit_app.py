@@ -60,7 +60,7 @@ DEFAULT_AGENT_MODELS_GEMINI: Dict[str, str] = {
     "user_proxy": "gemini-2.0-flash-thinking-exp-01-21",
     "investigation_evaluator": "gemini-2.0-flash",
 }
-DEFAULT_OLLAMA_MODEL = "ollama_chat/myaniu/qwen2.5-1m:latest"
+DEFAULT_OLLAMA_MODEL = "gemma3:27b-it-qat"
 
 for p in [KNOWLEDGE_DIR, RESULTS_DIR, GRANTS_DIR, LOGS_DIR]:
     p.mkdir(parents=True, exist_ok=True)

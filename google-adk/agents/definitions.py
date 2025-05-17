@@ -70,17 +70,17 @@ def _base(agent_name: str) -> str:
        return "_".join(parts[:-1])
    return agent_name
 
-# Gemini to Ollama model mapping (all values set to qwen2.5-1m:latest)
+# Gemini to Ollama model mapping
 _GEMINI_TO_OLLAMA: Dict[str, str] = {
-    "gemini-2.0-flash": "myaniu/qwen2.5-1m:latest",
-    "gemini-2.0-flash-thinking-exp-01-21": "myaniu/qwen2.5-1m:latest",
-    "gemini-2.5-flash-preview-04-17": "myaniu/qwen2.5-1m:latest",
-    "gemini-2.5-pro-exp-03-25": "myaniu/qwen2.5-1m:latest",
-    "gemini-2.5-pro-preview-03-25": "myaniu/qwen2.5-1m:latest",
+    "gemini-2.0-flash": "gemma3:27b-it-qat",
+    "gemini-2.0-flash-thinking-exp-01-21": "gemma3:27b-it-qat",
+    "gemini-2.5-flash-preview-04-17": "gemma3:27b-it-qat",
+    "gemini-2.5-pro-exp-03-25": "gemma3:27b-it-qat",
+    "gemini-2.5-pro-preview-03-25": "gemma3:27b-it-qat",
 }
 
 def _map_gemini_to_ollama(key: str) -> str:
-    return _GEMINI_TO_OLLAMA.get(key, "myaniu/qwen2.5-1m:latest")
+    return _GEMINI_TO_OLLAMA.get(key, "gemma3:27b-it-qat")
 
 def _resolve_model(agent_name: str, default: str) -> str:
     """
@@ -94,7 +94,7 @@ def _resolve_model(agent_name: str, default: str) -> str:
         env_key = f"OLLAMA_MODEL_{base}"
         model_str = os.getenv(env_key, _map_gemini_to_ollama(default))
         # provider 接頭辞が無ければ補完
-        if not model_str.startswith("ollama_chat/"):
+        if not model_str.startswith("ollama"):
             model_str = f"ollama_chat/{model_str}"
         return LiteLlm(model=model_str)
 
@@ -148,57 +148,57 @@ def _llm(name: str,
 # build_agents: UI 反映済みのエージェント一式を返す
 # ---------------------------------------------------------------------------
 def build_agents() -> Dict[str, Any]:
-    profile_analyzer         = _llm("profile_analyzer", "gemini-2.0-flash",
+    profile_analyzer         = _llm("profile_analyzer_agent", "gemini-2.0-flash",
                                     "profile_analyzer", "profile_analyzer",
                                     tools=[profile_reader_tool])
 
-    hypotheses_generator     = _llm("hypotheses_generator", "gemini-2.0-flash",
+    hypotheses_generator     = _llm("hypotheses_generator_agent", "gemini-2.0-flash",
                                     "hypotheses_generator", "hypotheses_generator",
                                     tools=[profile_reader_tool], temp=0.6)
 
-    query_generator          = _llm("query_generator",
+    query_generator          = _llm("query_generator_agent",
                                     "gemini-2.0-flash-thinking-exp-01-21",
                                     "query_generator", "query_generator",
                                     temp=0.6)
 
-    search_expert_init    = _llm("search_expert_Initial", "gemini-2.0-flash",
+    search_expert_init    = _llm("search_expert_initial_agent", "gemini-2.0-flash",
                                     "search_expert", "generate_initial_grants_list",
                                     tools=[custom_google_search_tool, csv_writer_tool],
                                     output_key="initial_list_generation_result")
     
     list_checker = LlmAgent(
-        name="list_checker",
-        model=_resolve_model("list_checker", "gemini-2.0-flash"),
+        name="list_checker_agent",
+        model=_resolve_model("list_checker_agent", "gemini-2.0-flash"),
         instruction="['initial_list_generation_result']を確認し '再度csvに書き込んでください' か 'csv作成完了' だけ返答してください。",
         generate_content_config=GenerateContentConfig(temperature=0.3),
         output_key="quality_status_init"
     )
 
-    search_expert_invest   = _llm("search_expert_Investigate", "gemini-2.0-flash",
+    search_expert_invest   = _llm("search_expert_investigate_agent", "gemini-2.0-flash",
                                     "search_expert", "investigate_grant",
                                     tools=[custom_google_search_tool, web_scraper_tool,
                                            adk_extract_links_tool, pdf_downloader_tool,
                                            pdf_reader_tool, csv_reader_tool],
                                     output_key="last_investigation_json_str")
 
-    investigation_eval  = _llm("investigation_evaluator", "gemini-2.0-flash",
+    investigation_eval  = _llm("investigation_evaluator_agent", "gemini-2.0-flash",
                                     "investigation_evaluator", "investigation_evaluator",
                                     output_key="last_evaluation_result")
 
     quality_checker = LlmAgent(
-        name="quality_checker",
-        model=_resolve_model("quality_checker", "gemini-2.0-flash"),
+        name="quality_checker_agent",
+        model=_resolve_model("quality_checker_agent", "gemini-2.0-flash"),
         instruction="['last_evaluation_result']を確認し 'finish' か 'continue' だけ返答してください。",
         generate_content_config=GenerateContentConfig(temperature=0.3),
         output_key="quality_status"
     )
 
-    report_generator         = _llm("report_generator", "gemini-2.0-flash",
+    report_generator         = _llm("report_generator_agent", "gemini-2.0-flash",
                                     "report_generator", "report_generator",
                                     tools=[csv_reader_tool, csv_updater_tool],
                                     output_key="last_report_generator_output", temp=0.6)
 
-    user_proxy               = _llm("user_proxy", "gemini-2.0-flash",
+    user_proxy               = _llm("user_proxy_agent", "gemini-2.0-flash",
                                     "user_proxy", "select_grant_to_investigate",
                                     tools=[profile_reader_tool, csv_reader_tool],
                                     output_key="current_grant_id_selected_raw", temp=0.6)
@@ -206,7 +206,7 @@ def build_agents() -> Dict[str, Any]:
     # --- workflow agents ---
     initial_loop = LoopAgent(name="InitialInvestigationLoop",
         sub_agents=[search_expert_init, list_checker, 
-                    CheckStatusAndEscalate_init(name="StopChecker_init")],
+                    CheckStatusAndEscalate_init(name="stop_checker_init_agent")],
         max_iterations=10)
 
     initial_phase = SequentialAgent(name="InitialGathering",
@@ -215,7 +215,7 @@ def build_agents() -> Dict[str, Any]:
 
     detailed_loop = LoopAgent(name="DetailedInvestigationLoop",
         sub_agents=[search_expert_invest, investigation_eval,
-                    quality_checker, CheckStatusAndEscalate(name="StopChecker")],
+                    quality_checker, CheckStatusAndEscalate(name="stop_checker_agent")],
         max_iterations=10)
 
     second_phase  = SequentialAgent(name="SecondPhase",
