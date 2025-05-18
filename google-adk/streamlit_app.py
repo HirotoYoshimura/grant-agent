@@ -211,7 +211,7 @@ def show_log():
 if "init" not in st.session_state:
     st.session_state.init = True
     st.session_state.env_cfg = load_env_dict()
-    API_KEYS = ["GOOGLE_API_KEY"]
+    API_KEYS = ["GOOGLE_API_KEY", "GOOGLE_CSE_API_KEY", "GOOGLE_CSE_ID"]
     for _k in API_KEYS:
         if not st.session_state.env_cfg.get(_k):
             st.session_state.env_cfg[_k] = os.environ.get(_k, "")
@@ -320,12 +320,31 @@ if st.session_state.page == "workflow":
 
 elif st.session_state.page == "api":
     st.markdown("## APIキー設定")
-    st.info("ウェブ検索にはAPIキーが不要になりました。Gemini APIキーのみ設定してください。")
     cfg = st.session_state.env_cfg
+    
+    # 必要なAPI設定に関する説明を追加
+    st.markdown("""
+    #### 必須API：
+    - **GOOGLE_API_KEY**: Gemini APIキー（LLMモデルを使用するために必要）
+    
+    #### オプションAPI（不要になりました）：
+    - **GOOGLE_CSE_API_KEY** と **GOOGLE_CSE_ID**: 検索ツールはAPIを使わず動作するようになりました。
+    """)
+    
     with st.form("api_form"):
-        cfg["GOOGLE_API_KEY"] = st.text_input("GOOGLE_API_KEY", cfg.get("GOOGLE_API_KEY", ""), type="password")
+        # GeminiのAPIキーを必須として強調
+        cfg["GOOGLE_API_KEY"] = st.text_input("GOOGLE_API_KEY（必須）", cfg.get("GOOGLE_API_KEY", ""), type="password")
+        
+        # Google CSE関連は折りたたみセクションに
+        with st.expander("オプションAPI設定（現在は不要）"):
+            st.markdown("検索機能はAPI不要で動作するようになりました。以下の設定は維持されていますが、入力は不要です。")
+            cfg["GOOGLE_CSE_API_KEY"] = st.text_input("GOOGLE_CSE_API_KEY（オプション）", cfg.get("GOOGLE_CSE_API_KEY", ""), type="password")
+            cfg["GOOGLE_CSE_ID"] = st.text_input("GOOGLE_CSE_ID（オプション）", cfg.get("GOOGLE_CSE_ID", ""), type="password")
+        
         if st.form_submit_button("保存"):
-            _save_env(cfg); st.success("保存しました")
+            save_env_dict(cfg)
+            st.session_state.env_cfg = cfg
+            st.success(".env を保存しました")
 
 # ---------------------------------------------------------------------------
 # Model settings page
@@ -445,3 +464,4 @@ elif st.session_state.page == "results":
         st.download_button("CSVダウンロード", df.to_csv(index=False).encode("utf-8-sig"), file_name="grants_candidates.csv", mime="text/csv")
     else:
         st.warning("まだ結果がありません。検索を実行してください。")
+s
