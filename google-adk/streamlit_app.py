@@ -211,7 +211,7 @@ def show_log():
 if "init" not in st.session_state:
     st.session_state.init = True
     st.session_state.env_cfg = load_env_dict()
-    API_KEYS = ["GOOGLE_API_KEY", "GOOGLE_CSE_API_KEY", "GOOGLE_CSE_ID"]
+    API_KEYS = ["GOOGLE_API_KEY"]
     for _k in API_KEYS:
         if not st.session_state.env_cfg.get(_k):
             st.session_state.env_cfg[_k] = os.environ.get(_k, "")
@@ -324,22 +324,13 @@ elif st.session_state.page == "api":
     
     # 必要なAPI設定に関する説明を追加
     st.markdown("""
-    #### 必須API：
+    #### APIキー：
     - **GOOGLE_API_KEY**: Gemini APIキー（LLMモデルを使用するために必要）
-    
-    #### オプションAPI（不要になりました）：
-    - **GOOGLE_CSE_API_KEY** と **GOOGLE_CSE_ID**: 検索ツールはAPIを使わず動作するようになりました。
     """)
     
     with st.form("api_form"):
         # GeminiのAPIキーを必須として強調
         cfg["GOOGLE_API_KEY"] = st.text_input("GOOGLE_API_KEY（必須）", cfg.get("GOOGLE_API_KEY", ""), type="password")
-        
-        # Google CSE関連は折りたたみセクションに
-        with st.expander("オプションAPI設定（現在は不要）"):
-            st.markdown("検索機能はAPI不要で動作するようになりました。以下の設定は維持されていますが、入力は不要です。")
-            cfg["GOOGLE_CSE_API_KEY"] = st.text_input("GOOGLE_CSE_API_KEY（オプション）", cfg.get("GOOGLE_CSE_API_KEY", ""), type="password")
-            cfg["GOOGLE_CSE_ID"] = st.text_input("GOOGLE_CSE_ID（オプション）", cfg.get("GOOGLE_CSE_ID", ""), type="password")
         
         if st.form_submit_button("保存"):
             save_env_dict(cfg)

@@ -21,23 +21,28 @@ docker history $IMAGE_NAME
 echo "イメージの内部構造を調査しています..."
 CONTAINER_ID=$(docker create $IMAGE_NAME)
 
-# 一時ディレクトリを作成
-TEMP_DIR="./image-inspection"
-mkdir -p $TEMP_DIR
+# 一時コンテナを起動して内部を調査
+echo "コンテナを起動して内部を調査しています..."
+docker start $CONTAINER_ID
 
-# アプリケーションディレクトリのファイル一覧をコピー
-echo "ファイル構造を抽出しています..."
-docker cp $CONTAINER_ID:/app $TEMP_DIR
+# 機密ファイルの有無を確認
+echo "================================================="
+echo "機密ファイルのチェック:"
+echo "================================================="
+echo "1. .envファイルを検索..."
+docker exec $CONTAINER_ID find /workspace -name ".env" -type f
 
-# 調査後、一時コンテナを削除
+echo "2. user_preference.txtファイルを検索..."
+docker exec $CONTAINER_ID find /workspace -name "user_preference.txt" -type f
+
+echo "3. credentialsファイルを検索..."
+docker exec $CONTAINER_ID find /workspace -name "credentials*.json" -type f -o -name "*.key" -type f
+
+echo "4. /workspace/google-adk ディレクトリの内容:"
+docker exec $CONTAINER_ID ls -la /workspace/google-adk
+
+# 調査後、一時コンテナを停止して削除
+docker stop $CONTAINER_ID
 docker rm $CONTAINER_ID
 
-# ディレクトリ構造を表示
-echo "ファイル構造:"
-find $TEMP_DIR -type f -name ".env" -o -name "user_preference.txt" | sort
-
-echo "アプリケーションディレクトリの内容:"
-ls -la $TEMP_DIR/app/google-adk
-
-echo "調査完了"
-echo "調査結果は $TEMP_DIR ディレクトリに保存されています" 
+echo "調査完了" 

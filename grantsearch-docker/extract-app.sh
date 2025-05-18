@@ -30,7 +30,7 @@ CONTAINER_ID=$(docker create $IMAGE_NAME)
 
 # アプリケーションファイルをコピー
 echo "アプリケーションファイルをコピーしています..."
-docker cp $CONTAINER_ID:/app/google-adk/. "$APP_DIR/"
+docker cp $CONTAINER_ID:/workspace/google-adk/. "$APP_DIR/"
 
 # 不要なファイルを削除
 echo "不要なファイルを削除しています..."
