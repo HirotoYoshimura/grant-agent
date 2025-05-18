@@ -67,19 +67,7 @@ Visual Studio Codeでプロジェクトフォルダを開きます。
 3. VSCode が Dev Container を構築し、リポジトリをコンテナ内で開きます。これには数分かかる場合があります
 4. 一度コンテナが作成されれば、以降はサイドバーの Remote Explorer、上部タブの Dev Containers から grant-agent を選んでクリックすることで構築済みの環境に入ることができます
 
-##### 4. 必要なAPIキーの取得方法
-
-###### Google Gemini API Key の取得
-
-1. **Google AI Studio にアクセス**
-   - [Google AI Studio](https://makersuite.google.com/app/apikey) にアクセスします
-   - Googleアカウントでログインします
-
-2. **API キーの作成**
-   - 「API キーを取得」または「Create API Key」をクリックします
-   - 新しいAPIキーが生成されます。このキーをコピーして安全な場所に保存してください（これが Gemini API Key になります）
-
-##### 5. アプリケーションの環境設定
+##### 4. アプリケーションの環境設定
 
 1. Dev Container 内で、ターミナルを開きます（VSCode のメニューから「ターミナル」→「新しいターミナル」）
 2. 以下のコマンドを実行して、環境セットアップスクリプトを実行します:
@@ -89,7 +77,7 @@ Visual Studio Codeでプロジェクトフォルダを開きます。
    ```
 3. このスクリプトは必要な Python パッケージをインストールし、仮想環境を設定します
 
-##### 6. アプリケーションの起動
+##### 5. アプリケーションの起動
 
 1. Dev Container 内のターミナルで、以下のコマンドを実行してアプリケーションを起動します:
    ```bash
@@ -102,6 +90,18 @@ Visual Studio Codeでプロジェクトフォルダを開きます。
 以下の使用方法は、Docker版と開発環境版の両方に共通です。
 
 ### 1. API設定
+
+#### Google Gemini API Key の取得
+
+1. **Google AI Studio にアクセス**
+   - [Google AI Studio](https://makersuite.google.com/app/apikey) にアクセスします
+   - Googleアカウントでログインします
+
+2. **API キーの作成**
+   - 「API キーを取得」または「Create API Key」をクリックします
+   - 新しいAPIキーが生成されます。このキーをコピーして安全な場所に保存してください（これが Gemini API Key になります）
+
+#### APIキーの設定
 
 1. サイドバーの「API設定」をクリックします
 2. Google AI Studioから取得したGemini APIキーを入力します
@@ -119,7 +119,6 @@ Visual Studio Codeでプロジェクトフォルダを開きます。
    - user_proxy: ユーザー代理として働くエージェント
    - investigation_evaluator: 調査情報を評価するエージェント
 3. 「設定を保存」ボタンをクリックします
-
 
 ### 3. プロファイル登録
 
