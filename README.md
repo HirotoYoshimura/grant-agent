@@ -15,16 +15,16 @@
 - 助成金情報の構造化と評価
 - 最適な助成金機会の特定と詳細調査
 
-## システム要件
-
-- Docker & Docker Compose（Dev Container用）
-- Visual Studio Code + Dev Containers拡張機能
-- インターネット接続
-
 ## インストール方法
 
 ### 方法1: Docker版（推奨）
 
+#### システム要件
+- Docker
+- Docker Compose（macOS/Windowsの場合はDocker Desktopに含まれています）
+- インターネット接続
+
+#### インストール手順
 1. [リリースページ](https://github.com/yourusername/grant-agent/releases)から`grantsearch-docker.zip`をダウンロード
 2. 任意のディレクトリに展開
 3. ターミナルで展開したディレクトリに移動
@@ -34,29 +34,36 @@
    ```
 5. 詳細な使用方法は[grantsearch-docker/README.md](grantsearch-docker/README.md)を参照
 
-### 方法2: 開発環境での実行
+### 方法2: 開発環境での実行（開発者向け）
 
-### 1. リポジトリのクローン
+#### システム要件
+- Docker & Docker Compose
+- Visual Studio Code + Dev Containers拡張機能
+- インターネット接続
+
+#### インストール手順
+
+##### 1. リポジトリのクローン
 
 ```bash
 git clone https://github.com/yourusername/grant-agent.git
 cd grant-agent
 ```
 
-### 2. Visual Studio Codeで開く
+##### 2. Visual Studio Codeで開く
 
 Visual Studio Codeでプロジェクトフォルダを開きます。
 
-### 3. Dev Containerで開く
+##### 3. Dev Containerで開く
 
 1. VSCodeの左下隅にある「><」アイコンをクリックします
 2. 「コンテナーで再度開く」または「Reopen in Container」を選択します
 3. VSCode が Dev Container を構築し、リポジトリをコンテナ内で開きます。これには数分かかる場合があります
 4. 一度コンテナが作成されれば、以降はサイドバーの Remote Explorer、上部タブの Dev Containers から grant-agent を選んでクリックすることで構築済みの環境に入ることができます
 
-### 4. 必要なAPIキーの取得方法
+##### 4. 必要なAPIキーの取得方法
 
-#### 必須: Google Gemini API Key の取得
+###### 必須: Google Gemini API Key の取得
 
 1. **Google AI Studio にアクセス**
    - [Google AI Studio](https://makersuite.google.com/app/apikey) にアクセスします
@@ -66,7 +73,7 @@ Visual Studio Codeでプロジェクトフォルダを開きます。
    - 「API キーを取得」または「Create API Key」をクリックします
    - 新しいAPIキーが生成されます。このキーをコピーして安全な場所に保存してください（これが Gemini API Key になります）
 
-#### オプション（不要）: Google API Key & Custom Search Engine ID の取得
+###### オプション（不要）: Google API Key & Custom Search Engine ID の取得
 ⚠️ **注意: 現在のバージョンではAPI不要の検索エンジンを使用しているため、以下のAPIキーは必要ありません。**
 
 検索機能は以下のAPI不要ツールを使用するように改善されました：
@@ -105,7 +112,7 @@ Visual Studio Codeでプロジェクトフォルダを開きます。
    - 作成後、「コントロールパネル」や「Control Panel」から検索エンジンの設定ページに移動します
    - 「基本」タブで「検索エンジン ID」を見つけます。これをコピーして保存してください（これが Google CSE ID になります）
 
-### 5. アプリケーションの環境設定
+##### 5. アプリケーションの環境設定
 
 1. Dev Container 内で、ターミナルを開きます（VSCode のメニューから「ターミナル」→「新しいターミナル」）
 2. 以下のコマンドを実行して、環境セットアップスクリプトを実行します:
@@ -115,7 +122,7 @@ Visual Studio Codeでプロジェクトフォルダを開きます。
    ```
 3. このスクリプトは必要な Python パッケージをインストールし、仮想環境を設定します
 
-### 6. アプリケーションの起動
+##### 6. アプリケーションの起動
 
 1. Dev Container 内のターミナルで、以下のコマンドを実行してアプリケーションを起動します:
    ```bash
@@ -124,6 +131,8 @@ Visual Studio Codeでプロジェクトフォルダを開きます。
 2. ブラウザで Streamlit アプリが自動的に開きます（通常は http://localhost:8501）
 
 ## アプリケーションの使用方法
+
+以下の使用方法は、Docker版と開発環境版の両方に共通です。
 
 ### 1. API設定
 
