@@ -8,10 +8,25 @@ echo ""
 echo "このスクリプトは必要なファイルを展開し、実行準備を行います。"
 echo ""
 
+# 必要なディレクトリを作成
+echo "データディレクトリを作成しています..."
+mkdir -p ./data/results
+mkdir -p ./data/logs
+mkdir -p ./data/knowledge
+touch ./data/.env
+
+# 権限を設定
+echo "ディレクトリの権限を設定しています..."
+chmod -R 777 ./data
+
 # 実行権限を付与
 chmod +x start-grantsearch.sh
+chmod +x debug.sh
 
 echo "インストールが完了しました！"
+echo ""
+echo "作成されたディレクトリ構造:"
+ls -la ./data/
 echo ""
 echo "使用方法："
 echo "1. ./start-grantsearch.sh コマンドでアプリケーションを起動"
