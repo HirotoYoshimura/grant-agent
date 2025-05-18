@@ -21,7 +21,20 @@
 - Visual Studio Code + Dev Containers拡張機能
 - インターネット接続
 
-## インストール手順
+## インストール方法
+
+### 方法1: Docker版（推奨）
+
+1. [リリースページ](https://github.com/yourusername/grant-agent/releases)から`grantsearch-docker.zip`をダウンロード
+2. 任意のディレクトリに展開
+3. ターミナルで展開したディレクトリに移動
+4. 以下のコマンドを実行：
+   ```bash
+   ./install.sh
+   ```
+5. 詳細な使用方法は[grantsearch-docker/README.md](grantsearch-docker/README.md)を参照
+
+### 方法2: 開発環境での実行
 
 ### 1. リポジトリのクローン
 
