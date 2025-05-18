@@ -50,7 +50,7 @@ def _task_desc(key: str) -> str:
 # ---------------------------------------------------------------------------
 # tools import
 # ---------------------------------------------------------------------------
-from tools.common_tools import analyze_profile_tool, custom_google_search_tool
+from tools.common_tools import analyze_profile_tool, custom_google_search_tool, generate_hypotheses_tool
 from tools.web_tools    import web_scraper_tool, adk_extract_links_tool
 from tools.pdf_tools    import pdf_downloader_tool, pdf_reader_tool
 from tools.csv_tools    import csv_reader_tool, csv_writer_tool, csv_updater_tool
@@ -162,7 +162,7 @@ def build_agents() -> Dict[str, Any]:
 
     hypotheses_generator     = _llm("hypotheses_generator_agent", "gemini-2.0-flash",
                                     "hypotheses_generator", "hypotheses_generator",
-                                    tools=[analyze_profile_tool], temp=0.6)
+                                    tools=[generate_hypotheses_tool], temp=0.6)
 
     query_generator          = _llm("query_generator_agent",
                                     "gemini-2.0-flash-thinking-exp-01-21",

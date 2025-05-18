@@ -90,3 +90,19 @@ def save_data_to_json(data: Dict[str, Any], output_path: str) -> Dict[str, Any]:
         logger.error(f"Error saving data to JSON ({output_path}): {str(e)}")
         return {"status": "error", "error_message": f"Failed to save JSON: {str(e)}"}
 json_saver_tool = FunctionTool(func=save_data_to_json)
+
+# --- ダミー関数：Qwen3がこの関数を呼び出そうとするための対応 ---
+def generate_hypotheses(**kwargs) -> Dict[str, Any]:
+    """Qwen3モデルが呼び出す可能性のある仮説生成関数。
+    実際にはhypotheses_generator_agentが処理するため、この関数内で実装はせず、
+    エラーメッセージを返します。
+    """
+    logger.warning("generate_hypotheses called directly. This should be handled by hypotheses_generator agent.")
+    return {
+        "status": "error", 
+        "message": "generate_hypothesesはLLMが直接呼び出すべきではありません。「hypotheses_generator_task」を参照し、適切に助成金カテゴリの仮説を生成してください。",
+        "categories": []
+    }
+
+# ダミー関数をツールとして登録
+generate_hypotheses_tool = FunctionTool(generate_hypotheses)
