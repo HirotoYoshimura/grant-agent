@@ -5,7 +5,7 @@ services:
     ports:
       - "8501:8501"
     volumes:
-      - ./data/results:/app/google-adk/results
-      - ./data/logs:/app/google-adk/logs
-      - ./data/knowledge:/app/google-adk/knowledge
-      - ./data/.env:/app/google-adk/.env 
+      - ./data/results:/workspace/google-adk/results
+      - ./data/logs:/workspace/google-adk/logs
+      - ./data/knowledge:/workspace/google-adk/knowledge
+      - ./data/.env:/workspace/google-adk/.env 

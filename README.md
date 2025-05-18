@@ -68,7 +68,7 @@ Visual Studio Codeでプロジェクトフォルダを開きます。
 
 ##### 4. 必要なAPIキーの取得方法
 
-###### 必須: Google Gemini API Key の取得
+###### Google Gemini API Key の取得
 
 1. **Google AI Studio にアクセス**
    - [Google AI Studio](https://makersuite.google.com/app/apikey) にアクセスします
@@ -77,45 +77,6 @@ Visual Studio Codeでプロジェクトフォルダを開きます。
 2. **API キーの作成**
    - 「API キーを取得」または「Create API Key」をクリックします
    - 新しいAPIキーが生成されます。このキーをコピーして安全な場所に保存してください（これが Gemini API Key になります）
-
-###### オプション（不要）: Google API Key & Custom Search Engine ID の取得
-⚠️ **注意: 現在のバージョンではAPI不要の検索エンジンを使用しているため、以下のAPIキーは必要ありません。**
-
-検索機能は以下のAPI不要ツールを使用するように改善されました：
-- DuckDuckGo検索（API不要）
-- Searx検索（複数の公開インスタンスを使用）
-
-以下の手順は参考のためだけに残されています：
-
-1. **Google Cloud Platform アカウント作成**
-   - [Google Cloud Platform](https://console.cloud.google.com/) にアクセスします
-   - Googleアカウントでログインします（アカウントがない場合は作成してください）
-
-2. **プロジェクト作成**
-   - 上部のナビゲーションバーにあるプロジェクト選択ドロップダウンをクリックします
-   - 表示されるダイアログで「新しいプロジェクト」をクリックします
-   - プロジェクト名を入力して「作成」をクリックします
-
-3. **Custom Search API の有効化**
-   - 左側のナビゲーションメニューから「APIとサービス」→「ライブラリ」を選択します
-   - 検索ボックスに「Custom Search API」と入力します
-   - 検索結果から「Custom Search API」をクリックします
-   - 「有効にする」ボタンをクリックします
-
-4. **API キーの作成**
-   - 左側のナビゲーションメニューから「APIとサービス」→「認証情報」を選択します
-   - 上部の「+ 認証情報を作成」をクリックし、ドロップダウンから「APIキー」を選択します
-   - 新しいAPIキーが生成されます。このキーをコピーして安全な場所に保存してください（これが Google CSE API Key になります）
-   - 必要に応じて「APIキーを制限」をクリックして、キーのセキュリティ設定を行うことができます
-
-5. **Custom Search Engine の設定**
-   - [Programmable Search Engine](https://programmablesearchengine.google.com/about/) にアクセスします
-   - 「始める」または「Get started」をクリックします
-   - 「新しい検索エンジン」または「Create a new search engine」をクリックします
-   - 「検索するサイト」で「検索エンジンの検索対象」を「検索」または「Search the entire web」を選択します
-   - 検索エンジン名を入力して「作成」をクリックします
-   - 作成後、「コントロールパネル」や「Control Panel」から検索エンジンの設定ページに移動します
-   - 「基本」タブで「検索エンジン ID」を見つけます。これをコピーして保存してください（これが Google CSE ID になります）
 
 ##### 5. アプリケーションの環境設定
 
@@ -142,9 +103,7 @@ Visual Studio Codeでプロジェクトフォルダを開きます。
 ### 1. API設定
 
 1. サイドバーの「API設定」をクリックします
-2. 以下のAPIキーを入力します:
-   - GOOGLE_API_KEY: Google AI Studio で取得した Gemini API キー（必須）
-   - GOOGLE_CSE_API_KEY と GOOGLE_CSE_ID: これらは現在オプションで、入力は不要です
+2. Google AI Studioから取得したGemini APIキーを入力します
 3. 「設定を保存」ボタンをクリックします
 
 ### 2. LLM モデル設定
