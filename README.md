@@ -26,7 +26,7 @@
 - インターネット接続
 
 #### インストール手順
-1. このリポジトリの `dist/grantsearch-docker.zip` をダウンロードするか、以下のコマンドでリポジトリをクローンして取得します：
+1. このリポジトリのリリースページから `v0.4.0-preview` をダウンロードするか、以下のコマンドでリポジトリをクローンして取得します：
    - [**ダウンロードリンク**](https://github.com/HirotoYoshimura/grant-agent/releases/download/v0.4.0-preview/grantsearch-docker.zip)
    ```bash
    git clone https://github.com/yourusername/grant-agent.git
@@ -36,7 +36,7 @@
 3. ターミナルで展開したディレクトリに移動
 4. 以下のコマンドを実行：
    ```bash
-   ./install.sh
+   ./start-grantsearch.sh
    ```
 5. 詳細な使用方法は[grantsearch-docker/README.md](grantsearch-docker/README.md)を参照
 
