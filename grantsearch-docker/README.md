@@ -35,8 +35,10 @@
 
 ```bash
 docker --version
-docker compose version
+docker compose version  # 注意: 新しい構文では「docker compose」（ハイフンなし）
 ```
+
+> **注意**: 古いバージョンのDockerでは `docker-compose`（ハイフン付き）コマンドが使われていましたが、最新のバージョンでは `docker compose`（スペース区切り）が推奨されています。このアプリケーションは新しい構文を使用します。
 
 ## インストールと実行方法
 

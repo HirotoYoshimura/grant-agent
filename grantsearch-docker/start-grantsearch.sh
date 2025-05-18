@@ -21,4 +21,4 @@ docker pull hirotoyo/grantsearch:latest
 # Dockerコンテナを起動
 echo "Grant Search を起動しています..."
 echo "ブラウザで http://localhost:8501 にアクセスしてください"
-docker-compose up 
+docker compose up 

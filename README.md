@@ -22,11 +22,16 @@
 #### システム要件
 - Docker
 - Docker Compose（macOS/Windowsの場合はDocker Desktopに含まれています）
+  > **注意**: 現在のバージョンでは `docker compose`（スペース区切り）構文を使用しています。古い `docker-compose`（ハイフン付き）コマンドは使用していません。
 - インターネット接続
 
 #### インストール手順
-1. [リリースページ](https://github.com/yourusername/grant-agent/releases)から`grantsearch-docker.zip`をダウンロード
-2. 任意のディレクトリに展開
+1. このリポジトリの `dist/grantsearch-docker.zip` をダウンロードするか、以下のコマンドでリポジトリをクローンして取得します：
+   ```bash
+   git clone https://github.com/yourusername/grant-agent.git
+   cd grant-agent
+   ```
+2. zipファイルを任意のディレクトリに展開
 3. ターミナルで展開したディレクトリに移動
 4. 以下のコマンドを実行：
    ```bash
