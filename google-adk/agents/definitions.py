@@ -42,7 +42,7 @@ def _task_desc(key: str) -> str:
 # ---------------------------------------------------------------------------
 # tools import
 # ---------------------------------------------------------------------------
-from tools.common_tools import profile_reader_tool, custom_google_search_tool
+from tools.common_tools import profile_reader_tool, web_search_tool
 from tools.web_tools    import web_scraper_tool, adk_extract_links_tool
 from tools.pdf_tools    import pdf_downloader_tool, pdf_reader_tool
 from tools.csv_tools    import csv_reader_tool, csv_writer_tool, csv_updater_tool
@@ -129,7 +129,7 @@ def build_agents() -> Dict[str, Any]:
 
     search_expert_init    = _llm("search_expert_Initial", "gemini-2.0-flash",
                                     "search_expert", "generate_initial_grants_list",
-                                    tools=[custom_google_search_tool, csv_writer_tool],
+                                    tools=[web_search_tool, csv_writer_tool],
                                     output_key="initial_list_generation_result")
     
     list_checker = LlmAgent(
@@ -142,7 +142,7 @@ def build_agents() -> Dict[str, Any]:
 
     search_expert_invest   = _llm("search_expert_Investigate", "gemini-2.0-flash",
                                     "search_expert", "investigate_grant",
-                                    tools=[custom_google_search_tool, web_scraper_tool,
+                                    tools=[web_search_tool, web_scraper_tool,
                                            adk_extract_links_tool, pdf_downloader_tool,
                                            pdf_reader_tool, csv_reader_tool],
                                     output_key="last_investigation_json_str")

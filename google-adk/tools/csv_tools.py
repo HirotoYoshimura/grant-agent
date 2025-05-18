@@ -54,12 +54,10 @@ def write_grants_to_csv(grants_data: List[Dict[str, Any]]) -> Dict[str, Any]:
     """
 
     output_path = "/workspace/google-adk/results/grants_data/grants_candidates.csv"
-    append = os.environ.get("APPEND_MODE", "").lower() in {"true", "1", "yes"}
     abs_path = os.path.abspath(output_path)
 
     logger.info(
         "Attempting to %s %d grants → %s",
-        "append" if append else "write",
         len(grants_data),
         abs_path,
     )
@@ -69,30 +67,12 @@ def write_grants_to_csv(grants_data: List[Dict[str, Any]]) -> Dict[str, Any]:
         os.makedirs(os.path.dirname(abs_path), exist_ok=True)
 
         # ------------------------------------------------------------------
-        # Load existing CSV (when appending)
-        # ------------------------------------------------------------------
-        existing_data: List[Dict[str, Any]] = []
-        if append and os.path.exists(abs_path):
-            try:
-                existing_data = pd.read_csv(abs_path, dtype=str).to_dict("records")
-            except pd.errors.EmptyDataError:
-                logger.warning("CSV exists but is empty: %s", abs_path)
-            except Exception as exc:
-                logger.error("Error reading existing CSV (%s): %s", abs_path, exc)
-
-        # ------------------------------------------------------------------
         # Merge & de‑duplicate by `id`
         # ------------------------------------------------------------------
         new_records = [g for g in grants_data if isinstance(g, dict)]
-        if append and existing_data:
-            existing_ids = {str(r.get("id", "")).strip() for r in existing_data}
-            new_records = [g for g in new_records if str(g.get("id", "")).strip() not in existing_ids]
-
-        # Combine
-        combined = (existing_data + new_records) if append else new_records
 
         # Always generate a DataFrame with the full header order
-        df = pd.DataFrame(combined, columns=CANDIDATE_CSV_HEADERS).fillna("")
+        df = pd.DataFrame(new_records, columns=CANDIDATE_CSV_HEADERS).fillna("")
 
         # Save
         df.to_csv(abs_path, index=False, encoding="utf-8-sig", quoting=csv.QUOTE_MINIMAL)
@@ -155,12 +135,14 @@ def update_grant_in_csv(grant_id: str, update_data: Dict[str, Any], csv_path: st
         return {"status": "not_found", "message": f"ID '{grant_id}' not found."}
 
     update_data["updated_at"] = datetime.datetime.utcnow().isoformat()
+    update_data["investigated"] = True
+    
     for k, v in update_data.items():
         if k in df.columns:
             df.loc[mask, k] = "" if pd.isna(v) else v
         else:
             logger.warning("Unknown column '%s' – skipping", k)
-    df["investigated"] = True
+    
     df.fillna("", inplace=True)
     df.to_csv(abs_path, index=False, encoding="utf-8-sig", quoting=csv.QUOTE_MINIMAL)
 
