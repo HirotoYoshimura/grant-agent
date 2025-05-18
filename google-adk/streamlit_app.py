@@ -464,4 +464,3 @@ elif st.session_state.page == "results":
         st.download_button("CSVダウンロード", df.to_csv(index=False).encode("utf-8-sig"), file_name="grants_candidates.csv", mime="text/csv")
     else:
         st.warning("まだ結果がありません。検索を実行してください。")
-s
