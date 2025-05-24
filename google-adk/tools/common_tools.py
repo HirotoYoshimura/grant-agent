@@ -7,6 +7,7 @@ import time
 import re
 import requests
 from typing import Dict, Any, List, Optional
+from pathlib import Path
 from google.adk.tools import FunctionTool
 from urllib.parse import quote_plus
 from bs4 import BeautifulSoup
@@ -14,25 +15,25 @@ from bs4 import BeautifulSoup
 from dotenv import load_dotenv
 
 # Load environment variables from .env file
-load_dotenv("/workspace/google-adk/.env")
+load_dotenv(Path.cwd() / ".env")
 
 # Set up logging
 logger = logging.getLogger(__name__)
 
 # --- User Profile Reader Tool ---
 def read_user_profile() -> Dict[str, Any]:
-    file_path = "/workspace/google-adk/knowledge/user_preference.txt"
+    file_path = Path.cwd() / "knowledge" / "user_preference.txt"
     logger.info(f"Attempting to read user profile from: {file_path}")
     try:
         if not os.path.exists(file_path):
             logger.warning(f"Profile file not found: {file_path}")
-            return {"status": "error", "error_message": f"File not found: {file_path}", "file_path": file_path,}
+            return {"status": "error", "error_message": f"File not found: {str(file_path)}", "file_path": str(file_path),}
         with open(file_path, 'r', encoding='utf-8') as file: content = file.read()
         logger.info(f"Successfully read profile from: {file_path}")
-        return {"status": "success", "profile_text": content, "file_path": file_path,}
+        return {"status": "success", "profile_text": content, "file_path": str(file_path),}
     except Exception as e:
         logger.error(f"Error reading user profile from {file_path}: {str(e)}")
-        return {"status": "error", "error_message": f"Failed to read profile: {str(e)}", "file_path": file_path,}
+        return {"status": "error", "error_message": f"Failed to read profile: {str(e)}", "file_path": str(file_path),}
 profile_reader_tool = FunctionTool(func=read_user_profile)
 
 

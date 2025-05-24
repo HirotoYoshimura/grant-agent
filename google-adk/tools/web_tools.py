@@ -9,11 +9,13 @@ from google.adk.tools import FunctionTool, ToolContext # ToolContext for potenti
 import os 
 import time
 from dotenv import load_dotenv
+from pathlib import Path
+
 # Set up logging
 logger = logging.getLogger(__name__)
 
 # Load environment variables from .env file
-load_dotenv("/workspace/google-adk/.env")
+load_dotenv(Path.cwd() / ".env")
 
 # --- Constants ---
 _WEB_HEADERS = {

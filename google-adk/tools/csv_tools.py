@@ -5,6 +5,7 @@ import pandas as pd
 import datetime
 from typing import Dict, List, Any  
 from google.adk.tools import FunctionTool  
+from pathlib import Path
 
 # ----------------------------------------------------------------------------
 # Logging
@@ -53,18 +54,17 @@ def write_grants_to_csv(grants_data: List[Dict[str, Any]]) -> Dict[str, Any]:
       always has the full :pydata:`CANDIDATE_CSV_HEADERS` schema.
     """
 
-    output_path = "/workspace/google-adk/results/grants_data/grants_candidates.csv"
-    abs_path = os.path.abspath(output_path)
+    output_path = Path.cwd() / "results" / "grants_data" / "grants_candidates.csv"
 
     logger.info(
         "Attempting to %s %d grants → %s",
         len(grants_data),
-        abs_path,
+        output_path,
     )
 
     try:
         # Ensure parent directory exists
-        os.makedirs(os.path.dirname(abs_path), exist_ok=True)
+        os.makedirs(output_path.parent, exist_ok=True)
 
         # ------------------------------------------------------------------
         # Merge & de‑duplicate by `id`
@@ -75,9 +75,9 @@ def write_grants_to_csv(grants_data: List[Dict[str, Any]]) -> Dict[str, Any]:
         df = pd.DataFrame(new_records, columns=CANDIDATE_CSV_HEADERS).fillna("")
 
         # Save
-        df.to_csv(abs_path, index=False, encoding="utf-8-sig", quoting=csv.QUOTE_MINIMAL)
+        df.to_csv(output_path, index=False, encoding="utf-8-sig", quoting=csv.QUOTE_MINIMAL)
         logger.info("CSV written. Rows: %d", len(df))
-        return {"status": "success", "file_path": abs_path, "records_written": len(df)}
+        return {"status": "success", "file_path": str(output_path), "records_written": len(df)}
 
     except Exception as exc:
         logger.exception("Failed to write CSV: %s", exc)
