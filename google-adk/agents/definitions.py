@@ -9,12 +9,15 @@ import os
 import logging
 from pathlib import Path
 from typing import Dict, Any, List, AsyncGenerator, Optional
+import requests
 
 import yaml
 from google.genai.types import GenerateContentConfig
 from google.adk.agents import LlmAgent, BaseAgent, SequentialAgent, LoopAgent
 from google.adk.agents.invocation_context import InvocationContext
 from google.adk.events import Event, EventActions
+# from litellm import LiteLLM # 元のインポートをコメントアウトまたは削除
+from google.adk.models.lite_llm import LiteLlm as ADKLiteLlm # 正しいインポートパスに修正
 
 # ---------------------------------------------------------------------------
 # 設定ファイル読み込み
@@ -35,6 +38,17 @@ def _load_yaml(path: Path) -> Dict[str, Any]:
 
 AGENTS_CONF = _load_yaml(AGENTS_CFG)
 TASKS_CONF  = _load_yaml(TASKS_CFG)
+
+def _get_ollama_models() -> List[str]:
+    """Ollama APIから利用可能なモデルのリストを取得します。"""
+    try:
+        response = requests.get("http://localhost:11434/api/tags")
+        response.raise_for_status()  # HTTPエラーがあれば例外を発生させる
+        models_data = response.json()
+        return [f"ollama/{model['name']}" for model in models_data.get("models", [])]
+    except requests.exceptions.RequestException as e:
+        logger.warning(f"Ollama APIからのモデル取得に失敗しました: {e}")
+        return []
 
 def _task_desc(key: str) -> str:
     return TASKS_CONF.get(f"{key}_task", {}).get("description", "")
@@ -64,13 +78,31 @@ def _base(agent_name: str) -> str:
 
 def _resolve_model(agent_name: str, default: str) -> str:
     """
-    優先度:  
-    1. 環境変数  MODEL_<BASE_NAME>  
-       例) search_expert → MODEL_SEARCH_EXPERT  
+    優先度:
+    1. 環境変数  MODEL_<BASE_NAME>
+       例) search_expert → MODEL_SEARCH_EXPERT
     2. デフォルト値
+    戻り値: LlmAgentが期待するモデル名
     """
     env_key = f"MODEL_{_base(agent_name).upper()}"
-    return os.getenv(env_key, default)
+    model_name_from_config = os.getenv(env_key, default)
+
+    if model_name_from_config.startswith("ollama/"):
+        # Ollamaモデルの場合、環境変数を設定
+        os.environ["OPENAI_API_BASE"] = "http://localhost:11434/v1"
+        os.environ["OPENAI_API_KEY"] = "anything"
+        logger.info(
+            f"Ollamaモデル ({model_name_from_config}) が選択されました。 "
+            f"環境変数 OPENAI_API_BASE と OPENAI_API_KEY を設定し、モデル名を変換します。"
+        )
+        # "ollama/" プレフィックスを除去し、"openai/" プレフィックスを付加
+        # 例: "ollama/llama3.2:latest" -> "llama3.2:latest"
+        actual_ollama_model_name = model_name_from_config.split('/', 1)[1]
+        # 例: "llama3.2:latest" -> "openai/llama3.2:latest"
+        return f"openai/{actual_ollama_model_name}"
+    
+    # Geminiなど、その他のモデルの場合はそのまま返す
+    return model_name_from_config
 
 # ---------------------------------------------------------------------------
 # Quality-Checker 補助クラス
@@ -97,12 +129,22 @@ def _llm(name: str,
          tools: List = (),
          output_key: str | None = None,
          temp: float = 0.3) -> LlmAgent:
-    cfg  = AGENTS_CONF.get(goal_key, {})         
+    cfg  = AGENTS_CONF.get(goal_key, {})
     goal = cfg.get("goal", "")
     inst = f"goal: {goal}\n\n{_task_desc(task_key)}"
+    resolved_model_name = _resolve_model(name, default_model)
+
+    model_to_pass: Any
+    if resolved_model_name.startswith("openai/"): # Ollama (OpenAIプロキシ経由) の場合
+        logger.info(f"Using ADK's LiteLlm wrapper for Ollama model: {resolved_model_name}")
+        # ADK提供のLiteLlmラッパーを使用
+        model_to_pass = ADKLiteLlm(model=resolved_model_name)
+    else: # Geminiなどの直接サポートされているモデルの場合
+        model_to_pass = resolved_model_name
+
     return LlmAgent(
         name=name,
-        model=_resolve_model(name, default_model),
+        model=model_to_pass,
         description=cfg.get("backstory", ""),
         instruction=inst,
         generate_content_config=GenerateContentConfig(temperature=temp),

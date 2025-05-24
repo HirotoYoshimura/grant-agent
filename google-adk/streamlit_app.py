@@ -20,6 +20,7 @@ import yaml
 from pathlib import Path
 from typing import Dict, List, Optional
 from tools.csv_tools import CANDIDATE_CSV_HEADERS
+from agents.definitions import _get_ollama_models
 
 import pandas as pd
 import streamlit as st
@@ -46,6 +47,14 @@ with MODEL_CFG_FILE.open(encoding="utf-8") as f:
 
 MODEL_CANDIDATES: list[str] = _model_cfg["candidates"]
 MODEL_INFO: dict[str, str] = _model_cfg["info"]
+
+# Ollamaモデルの動的読み込み
+ollama_models = _get_ollama_models()
+if ollama_models:
+    MODEL_CANDIDATES.extend(ollama_models)
+    for model_name in ollama_models:
+        if model_name not in MODEL_INFO:
+            MODEL_INFO[model_name] = "ローカル Ollama モデル"
 
 for p in [KNOWLEDGE_DIR, RESULTS_DIR, GRANTS_DIR, LOGS_DIR]:
     p.mkdir(parents=True, exist_ok=True)
@@ -344,16 +353,81 @@ elif st.session_state.page == "models":
     st.markdown("## LLMモデル設定")
     am = st.session_state.agent_models
 
+    # モデルタイプ選択
+    model_type = st.radio(
+        "モデルタイプを選択",
+        ("Gemini API", "Ollama Local"),
+        key="model_type_selection"
+    )
+    st.markdown("---")
+
+    if model_type == "Ollama Local":
+        st.info(
+            """
+            Ollamaモデルを選択すると、以下の環境変数が自動的に設定されます。
+            - `OPENAI_API_BASE=http://localhost:11434/v1`
+            - `OPENAI_API_KEY=anything`
+            Ollamaサーバーがローカルで実行されていることを確認してください。
+            """
+        )
+        # 自動設定されるため、入力フィールドは削除
+        # st.text_input("OPENAI_API_BASE (現在の設定)", value=os.getenv("OPENAI_API_BASE", "未設定"), disabled=True)
+        # st.text_input("OPENAI_API_KEY (現在の設定)", value=os.getenv("OPENAI_API_KEY", "未設定"), disabled=True)
+
+    # 表示するモデル候補をフィルタリング
+    if model_type == "Gemini API":
+        current_model_candidates = [m for m in MODEL_CANDIDATES if not m.startswith("ollama/")]
+    else: # Ollama Local
+        current_model_candidates = [m for m in MODEL_CANDIDATES if m.startswith("ollama/")]
+        if not current_model_candidates:
+            st.warning("利用可能なOllamaモデルが見つかりません。Ollamaサーバーが起動しているか、モデルがインストールされているか確認してください。")
+
+
     for agent_name in am:
         st.markdown(f"#### {agent_name}")
-        sel = st.selectbox(
-            "モデルを選択",
-            MODEL_CANDIDATES,
-            index=MODEL_CANDIDATES.index(am[agent_name]),
-            key=f"{agent_name}_sel",
-            format_func=lambda m: f"{m}: {MODEL_INFO.get(m, '')}"
-        )
-        am[agent_name] = sel
+        
+        # 現在選択されているモデルがフィルタリング後の候補に存在するか確認
+        current_agent_model = am.get(agent_name)
+        if current_agent_model not in current_model_candidates:
+            # 存在しない場合は、候補リストの先頭のモデルを選択する（もしくはNoneなど）
+            # ここでは、エラーを防ぐために、利用可能な候補がない場合は選択肢を空にする
+            selected_model_index = 0
+            if not current_model_candidates:
+                 # 利用可能なモデルがない場合、selectboxを無効化またはメッセージ表示
+                 st.warning(f"{model_type} で利用可能なモデルがありません。")
+                 # am[agent_name] = None # またはデフォルトのGeminiモデルに戻すなど
+                 # continue
+            elif current_model_candidates : # current_model_candidatesが空でないことを確認
+                 am[agent_name] = current_model_candidates[0] # リストの最初のモデルをデフォルトに
+            else: # 候補がない場合
+                 # 適切なデフォルト値や処理を設定
+                 # 例えば、Geminiのデフォルトモデルにフォールバックするなど
+                 # この例では何もしない（UI上でエラーになる可能性あり）
+                 pass
+
+
+        # selectboxのindexを安全に取得
+        try:
+            model_index = current_model_candidates.index(am[agent_name]) if am.get(agent_name) in current_model_candidates else 0
+        except ValueError:
+            model_index = 0 # current_model_candidates が空の場合や、am[agent_name] が存在しない場合に発生しうる
+
+        if not current_model_candidates:
+            st.selectbox(
+                "モデルを選択",
+                [],
+                key=f"{agent_name}_sel",
+                disabled=True
+            )
+        else:
+            sel = st.selectbox(
+                "モデルを選択",
+                current_model_candidates,
+                index=model_index,
+                key=f"{agent_name}_sel",
+                format_func=lambda m: f"{m}: {MODEL_INFO.get(m, MODEL_INFO.get('ollama', ''))}" # Ollamaモデル用の汎用情報
+            )
+            am[agent_name] = sel
         st.markdown("---")
 
     if st.button("保存"):

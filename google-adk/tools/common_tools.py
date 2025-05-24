@@ -21,19 +21,21 @@ load_dotenv(Path.cwd() / ".env")
 logger = logging.getLogger(__name__)
 
 # --- User Profile Reader Tool ---
-def read_user_profile() -> Dict[str, Any]:
-    file_path = Path.cwd() / "knowledge" / "user_preference.txt"
-    logger.info(f"Attempting to read user profile from: {file_path}")
+def read_user_profile(*args, **kwargs) -> Dict[str, Any]:
+    # 渡された引数は無視し、常にデフォルトパスを使用する
+    profile_file = Path.cwd() / "knowledge" / "user_preference.txt"
+    
+    logger.info(f"Attempting to read user profile from (fixed path): {profile_file}")
     try:
-        if not os.path.exists(file_path):
-            logger.warning(f"Profile file not found: {file_path}")
-            return {"status": "error", "error_message": f"File not found: {str(file_path)}", "file_path": str(file_path),}
-        with open(file_path, 'r', encoding='utf-8') as file: content = file.read()
-        logger.info(f"Successfully read profile from: {file_path}")
-        return {"status": "success", "profile_text": content, "file_path": str(file_path),}
+        if not os.path.exists(profile_file):
+            logger.warning(f"Profile file not found: {profile_file}")
+            return {"status": "error", "error_message": f"File not found: {str(profile_file)}", "file_path": str(profile_file),}
+        with open(profile_file, 'r', encoding='utf-8') as file: content = file.read()
+        logger.info(f"Successfully read profile from: {profile_file}")
+        return {"status": "success", "profile_text": content, "file_path": str(profile_file),}
     except Exception as e:
-        logger.error(f"Error reading user profile from {file_path}: {str(e)}")
-        return {"status": "error", "error_message": f"Failed to read profile: {str(e)}", "file_path": str(file_path),}
+        logger.error(f"Error reading user profile from {profile_file}: {str(e)}")
+        return {"status": "error", "error_message": f"Failed to read profile: {str(e)}", "file_path": str(profile_file),}
 profile_reader_tool = FunctionTool(func=read_user_profile)
 
 

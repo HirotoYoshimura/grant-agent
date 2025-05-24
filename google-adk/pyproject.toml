@@ -21,6 +21,7 @@ dependencies = [
     "streamlit==1.44.1",
     "streamlit-autorefresh==1.0.1",
     "streamlit-mermaid==0.3.0",
+    "litellm==1.70.4",
 ]
 
 [build-system]
