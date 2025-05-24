@@ -9,3 +9,4 @@ cache
 venv
 grants_data
 user_preference.txt
+grantsearch-docker/app-source

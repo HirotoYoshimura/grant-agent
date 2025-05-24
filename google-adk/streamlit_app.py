@@ -1,4 +1,3 @@
-
 """
 Streamlit UI for Grant-Search ADK
 """
@@ -212,7 +211,7 @@ def show_log():
 if "init" not in st.session_state:
     st.session_state.init = True
     st.session_state.env_cfg = load_env_dict()
-    API_KEYS = ["GOOGLE_CSE_API_KEY", "GOOGLE_CSE_ID", "GOOGLE_API_KEY"]
+    API_KEYS = ["GOOGLE_API_KEY"]
     for _k in API_KEYS:
         if not st.session_state.env_cfg.get(_k):
             st.session_state.env_cfg[_k] = os.environ.get(_k, "")
@@ -322,25 +321,21 @@ if st.session_state.page == "workflow":
 elif st.session_state.page == "api":
     st.markdown("## APIキー設定")
     cfg = st.session_state.env_cfg
+    
+    # 必要なAPI設定に関する説明を追加
+    st.markdown("""
+    #### APIキー：
+    - **GOOGLE_API_KEY**: Gemini APIキー（LLMモデルを使用するために必要）
+    """)
+    
     with st.form("api_form"):
-        for k in ["GOOGLE_CSE_API_KEY", "GOOGLE_CSE_ID", "GOOGLE_API_KEY"]:
-            cfg[k] = st.text_input(k, cfg.get(k, ""), type="password")
+        # GeminiのAPIキーを必須として強調
+        cfg["GOOGLE_API_KEY"] = st.text_input("GOOGLE_API_KEY（必須）", cfg.get("GOOGLE_API_KEY", ""), type="password")
+        
         if st.form_submit_button("保存"):
             save_env_dict(cfg)
             st.session_state.env_cfg = cfg
             st.success(".env を保存しました")
-
-# ---------------------------------------------------------------------------
-# API settings page
-# ---------------------------------------------------------------------------
-elif st.session_state.page == "api":
-    st.markdown("## APIキー設定")
-    cfg = st.session_state.env_cfg
-    with st.form("api_form"):
-        for k in ["GOOGLE_CSE_API_KEY", "GOOGLE_CSE_ID", "GOOGLE_API_KEY"]:
-            cfg[k] = st.text_input(k, cfg.get(k, ""), type="password")
-        if st.form_submit_button("保存"):
-            _save_env(cfg); st.success("保存しました")
 
 # ---------------------------------------------------------------------------
 # Model settings page

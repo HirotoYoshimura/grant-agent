@@ -18,12 +18,12 @@ from agents import build_agents
 
 # Tool Imports
 try:
-    from tools.common_tools import profile_reader_tool, custom_google_search_tool, json_saver_tool
+    from tools.common_tools import profile_reader_tool, web_search_tool, json_saver_tool
     from tools.web_tools import web_scraper_tool, adk_extract_links_tool
     from tools.pdf_tools import pdf_downloader_tool, pdf_reader_tool
     # Import headers list from csv_tools
     from tools.csv_tools import csv_reader_tool, csv_writer_tool, csv_updater_tool, CANDIDATE_CSV_HEADERS
-    print("Successfully imported ADK tools and headers (using custom search).")
+    print("Successfully imported ADK tools and headers (using API-free web search).")
 except ImportError as e:
     print(f"Error importing from tools: {e}. Check 'tools' directory and __init__.py.")
     exit()
