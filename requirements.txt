@@ -8,6 +8,6 @@ html2text==2025.4.15
 streamlit==1.44.1
 streamlit-mermaid==0.3.0
 streamlit-autorefresh==1.0.1
-google-adk==0.3.0
+google-adk>=0.3.0
 bs4==0.0.2
 
