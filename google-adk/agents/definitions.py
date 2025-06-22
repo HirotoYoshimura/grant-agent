@@ -114,57 +114,57 @@ def _llm(name: str,
 # build_agents: UI 反映済みのエージェント一式を返す
 # ---------------------------------------------------------------------------
 def build_agents() -> Dict[str, Any]:
-    profile_analyzer         = _llm("profile_analyzer", "gemini-2.0-flash",
+    profile_analyzer         = _llm("profile_analyzer", "gemini-2.5-flash-lite-preview-06-17",
                                     "profile_analyzer", "profile_analyzer",
                                     tools=[profile_reader_tool])
 
-    hypotheses_generator     = _llm("hypotheses_generator", "gemini-2.0-flash",
+    hypotheses_generator     = _llm("hypotheses_generator", "gemini-2.5-flash-lite-preview-06-17",
                                     "hypotheses_generator", "hypotheses_generator",
                                     tools=[profile_reader_tool], temp=0.6)
 
     query_generator          = _llm("query_generator",
-                                    "gemini-2.0-flash-thinking-exp-01-21",
+                                    "gemini-2.5-flash-lite-preview-06-17-thinking-exp-01-21",
                                     "query_generator", "query_generator",
                                     temp=0.6)
 
-    search_expert_init    = _llm("search_expert_Initial", "gemini-2.0-flash",
+    search_expert_init    = _llm("search_expert_Initial", "gemini-2.5-flash-lite-preview-06-17",
                                     "search_expert", "generate_initial_grants_list",
                                     tools=[web_search_tool, csv_writer_tool],
                                     output_key="initial_list_generation_result")
     
     list_checker = LlmAgent(
         name="list_checker",
-        model=_resolve_model("list_checker", "gemini-2.0-flash"),
+        model=_resolve_model("list_checker", "gemini-2.5-flash-lite-preview-06-17"),
         instruction="['initial_list_generation_result']を確認し '再度csvに書き込んでください' か 'csv作成完了' だけ返答してください。",
         generate_content_config=GenerateContentConfig(temperature=0.3),
         output_key="quality_status_init"
     )
 
-    search_expert_invest   = _llm("search_expert_Investigate", "gemini-2.0-flash",
+    search_expert_invest   = _llm("search_expert_Investigate", "gemini-2.5-flash-lite-preview-06-17",
                                     "search_expert", "investigate_grant",
                                     tools=[web_search_tool, web_scraper_tool,
                                            adk_extract_links_tool, pdf_downloader_tool,
                                            pdf_reader_tool, csv_reader_tool],
                                     output_key="last_investigation_json_str")
 
-    investigation_eval  = _llm("investigation_evaluator", "gemini-2.0-flash",
+    investigation_eval  = _llm("investigation_evaluator", "gemini-2.5-flash-lite-preview-06-17",
                                     "investigation_evaluator", "investigation_evaluator",
                                     output_key="last_evaluation_result")
 
     quality_checker = LlmAgent(
         name="quality_checker",
-        model=_resolve_model("quality_checker", "gemini-2.0-flash"),
+        model=_resolve_model("quality_checker", "gemini-2.5-flash-lite-preview-06-17"),
         instruction="['last_evaluation_result']を確認し 'finish' か 'continue' だけ返答してください。",
         generate_content_config=GenerateContentConfig(temperature=0.3),
         output_key="quality_status"
     )
 
-    report_generator         = _llm("report_generator", "gemini-2.0-flash",
+    report_generator         = _llm("report_generator", "gemini-2.5-flash-lite-preview-06-17",
                                     "report_generator", "report_generator",
                                     tools=[csv_reader_tool, csv_updater_tool],
                                     output_key="last_report_generator_output", temp=0.6)
 
-    user_proxy               = _llm("user_proxy", "gemini-2.0-flash",
+    user_proxy               = _llm("user_proxy", "gemini-2.5-flash-lite-preview-06-17",
                                     "user_proxy", "select_grant_to_investigate",
                                     tools=[profile_reader_tool, csv_reader_tool],
                                     output_key="current_grant_id_selected_raw", temp=0.6)
