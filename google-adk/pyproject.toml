@@ -14,14 +14,18 @@ dependencies = [
     "google-api-python-client==2.167.0",
     "pymupdf4llm==0.0.17",
     "html2text==2025.4.15",
-    "streamlit==1.44.1",
+    "streamlit>=1.44.1",
     "streamlit-mermaid==0.3.0",
     "streamlit-autorefresh==1.0.1",
-    "google-adk==0.3.0",
+    "google-adk>=1.0.0",
     "bs4==0.0.2",
-]
+    "deprecated==1.2.18"
+    ]
 
 [build-system]
 requires = ["setuptools>=61.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
+[tool.setuptools.packages.find]
+include = ["grant_adk*"]             # 配布対象
+exclude = ["config*", "logs*", "results*", "knowledge*", "agents*"]
