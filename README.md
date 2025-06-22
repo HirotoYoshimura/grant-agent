@@ -27,7 +27,7 @@
 
 #### インストール手順
 1. このリポジトリのリリースページから `v0.4.0-preview` をダウンロードするか、以下のコマンドでリポジトリをクローンして取得します：
-   - [**ダウンロードリンク**](https://github.com/HirotoYoshimura/grant-agent/releases/download/v0.4.0-preview/grantsearch-docker.zip)
+   - [**ダウンロードリンク**](https://github.com/HirotoYoshimura/grant-agent/releases/download/v0.5.0/grantsearch-docker.zip)
    ```bash
    git clone https://github.com/yourusername/grant-agent.git
    cd grant-agent
