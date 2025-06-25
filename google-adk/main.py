@@ -216,7 +216,7 @@ async def main(user_profile_path: str, output_dir: str, grants_to_process: int =
     session_service = InMemorySessionService()
     runner = Runner( agent=initial_phase_agent, app_name="adk_funding_search", session_service=session_service )
     session_id = f"funding_run_{start_time.strftime('%Y%m%d_%H%M%S')}"
-    session = session_service.create_session( app_name=runner.app_name, user_id="funding_user_01", session_id=session_id, state=initial_state )
+    session = await session_service.create_session( app_name=runner.app_name, user_id="funding_user_01", session_id=session_id, state=initial_state )
     logger.info(f"Session '{session.id}' created.")
     logger.info(f"Initial state keys: {list(initial_state.keys())}")
 
@@ -235,7 +235,7 @@ async def main(user_profile_path: str, output_dir: str, grants_to_process: int =
         session_service2 = InMemorySessionService()
         runner2 = Runner( agent=second_phase_agent, app_name="adk_funding_search_phase2", session_service=session_service2)
         session_id2 = f"funding_run_{start_time.strftime('%Y%m%d_%H%M%S')}"
-        session2 = session_service2.create_session(app_name=runner2.app_name, user_id="funding_user_01", session_id=session_id2, state=initial_state)
+        session2 = await session_service2.create_session(app_name=runner2.app_name, user_id="funding_user_01", session_id=session_id2, state=initial_state)
 
         trigger_message = Content(role="user", parts=[Part(text=f"Investigate grant {i+1}...")])
         async for event in runner2.run_async(user_id=session2.user_id, session_id=session2.id, new_message=trigger_message):
